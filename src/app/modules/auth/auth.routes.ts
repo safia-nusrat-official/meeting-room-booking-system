@@ -8,7 +8,12 @@ const router = express.Router()
 router.post(
     '/signup', 
     validateRequest(authValidations.signUpValidation), 
-    authControllers.signupUser
+    authControllers.signup
+)
+router.post(
+    '/login', 
+    validateRequest(authValidations.loginValidation), 
+    authControllers.login
 )
 
 export const authRoutes = router

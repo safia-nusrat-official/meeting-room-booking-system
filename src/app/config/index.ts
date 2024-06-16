@@ -10,4 +10,5 @@ export default {
 	db_url: process.env.DB_URL,
 	bcrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
 	node_env: process.env.NODE_ENV,
+	access_secret: process.env.JWT_ACCESS_SECRET,
 };
