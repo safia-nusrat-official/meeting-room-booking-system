@@ -4,5 +4,6 @@ export interface TRoom {
     floorNo: number,
     capacity: number,
     pricePerSlot: number,
-    amenities: string[]
+    amenities: string[],
+    isDeleted?:boolean
 }

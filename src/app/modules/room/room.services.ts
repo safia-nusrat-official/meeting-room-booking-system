@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import QueryBuilder from '../../builder/QueryBuilder'
 import config from '../../config'
 import AppError from '../../errors/AppError'
@@ -26,8 +27,43 @@ const getAllRooms = async (query: Record<string, unknown>) => {
     const result = await roomQuery.modelQuery
     return result
 }
+const updateRoomIntoDB = async (id: string, payload: Partial<TRoom>) => {
+    const { amenities, ...primitiveFields } = payload
+    const session = await mongoose.startSession()
+    try {
+        session.startTransaction()
+        const room = await Room.findById(id)
+        if (!room) {
+            throw new AppError(404, 'Room not found.')
+        }
+        if (amenities && amenities.length) {
+            await Room.findOneAndUpdate(
+                { _id: id },
+                {
+                    $addToSet: { amenities: { $each: amenities } },
+                },
+                { session }
+            )
+        }
+        const result = await Room.findOneAndUpdate(
+            { _id: id },
+            primitiveFields,
+            { new: true, session }
+        )
+        await session.commitTransaction()
+        await session.endSession()
+        console.log(result)
+        return result
+    } catch (error) {
+        console.log(error)
+        await session.abortTransaction()
+        await session.endSession()
+        throw error
+    }
+}
 export const roomServices = {
     insertRoomIntoDB,
     getSingleRoomById,
     getAllRooms,
+    updateRoomIntoDB,
 }

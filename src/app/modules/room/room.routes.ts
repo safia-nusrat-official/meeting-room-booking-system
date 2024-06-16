@@ -12,6 +12,12 @@ router.post(
     validateRequest(roomValidations.createRoomSchemaValidation), 
     roomControllers.createRoom
 )
+router.put(
+    '/:id', 
+    auth("admin"),
+    validateRequest(roomValidations.updateRoomSchemaValidation), 
+    roomControllers.updateRoom
+)
 
 router.get('/:id', roomControllers.getRoomById)
 router.get('/', roomControllers.getRooms)
