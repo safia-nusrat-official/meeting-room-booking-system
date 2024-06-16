@@ -37,6 +37,9 @@ const updateRoomIntoDB = async (id: string, payload: Partial<TRoom>) => {
         if (!room) {
             throw new AppError(404, 'Room not found.')
         }
+        if (Object.keys(payload).includes("isDeleted")) {
+            throw new AppError(404, "You can't update isDeleted field via PUT route.")
+        }
         if (amenities && amenities.length) {
             await Room.findOneAndUpdate(
                 { _id: id },
