@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import mongoose, { Query } from 'mongoose'
 import QueryBuilder from '../../builder/QueryBuilder'
 import config from '../../config'
 import AppError from '../../errors/AppError'
@@ -41,26 +41,24 @@ const insertSlotIntoDB = async (payload: TSlot) => {
         totalNumOfSlots
     )
 
-    slotTimes.forEach(async(slot)=>{
+    slotTimes.forEach(async (slot) => {
         const insertedSlot = await Slot.create({
             ...slot,
             date,
-            room
-        })
+            room,
+        }, {new:true})
         console.log(insertedSlot)
     })
-    const result = await Slot.find({room}).sort('startTime')
-    return result
-}
-const getSingleSlotById = async (id: string) => {
-    const result = await Slot.findById(id)
-    if (!result) {
-        throw new AppError(404, `Slot not found.`)
-    }
+    const result = await Slot.find({ room })
     return result
 }
 const getAllSlots = async (query: Record<string, unknown>) => {
-    const result = await Slot.find()
+    const slotQuery = new QueryBuilder(Slot.find({isBooked:false}).populate("room"), query)
+        .filter()
+        .sort()
+        .paginate()
+        .fields()
+    const result = await slotQuery.modelQuery
     return result
 }
 
@@ -70,7 +68,6 @@ const deleteSlotFromDB = async (id: string) => {}
 
 export const slotServices = {
     insertSlotIntoDB,
-    getSingleSlotById,
     getAllSlots,
     updateSlotIntoDB,
     deleteSlotFromDB,

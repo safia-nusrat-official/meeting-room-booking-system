@@ -19,8 +19,7 @@ router.put(
     slotControllers.updateSlot
 )
 
-router.get('/:id', slotControllers.getSlotById)
-router.get('/', slotControllers.getSlots)
+router.get('/availability', slotControllers.getSlots)
 router.delete('/:id', auth('admin'), slotControllers.deleteSlot)
 
 export const slotRoutes = router
