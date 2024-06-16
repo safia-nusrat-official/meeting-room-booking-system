@@ -42,18 +42,24 @@ const insertSlotIntoDB = async (payload: TSlot) => {
     )
 
     slotTimes.forEach(async (slot) => {
-        const insertedSlot = await Slot.create({
-            ...slot,
-            date,
-            room,
-        }, {new:true})
+        const insertedSlot = await Slot.create(
+            {
+                ...slot,
+                date,
+                room,
+            },
+            { new: true }
+        )
         console.log(insertedSlot)
     })
     const result = await Slot.find({ room })
     return result
 }
 const getAllSlots = async (query: Record<string, unknown>) => {
-    const slotQuery = new QueryBuilder(Slot.find({isBooked:false}).populate("room"), query)
+    const slotQuery = new QueryBuilder(
+        Slot.find({ isBooked: false }).populate('room'),
+        query
+    )
         .filter()
         .sort()
         .paginate()
