@@ -8,7 +8,7 @@ let server: Server
 async function Main() {
     await mongoose.connect(config.db_url as string)
     server = app.listen(config.port, () => {
-        console.log('PH University server running on port: ' + config.port)
+        console.log('Meeting Room Booking System server running on port: ' + config.port)
     })
 }
 
