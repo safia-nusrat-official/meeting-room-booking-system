@@ -4,9 +4,7 @@ import { catchAsync } from '../utils/catchAsync'
 import jwt, { JwtPayload } from "jsonwebtoken"
 
 export const auth = (...roles: ('user' | 'admin')[]) => {
-    return catchAsync(async (req, res, next) => {
-        console.log(`those who can access this route: `, roles)
-        
+    return catchAsync(async (req, res, next) => {        
 		const token = req.headers.authorization
         if (!token) {
             throw new Error(`Unauthorized user!`)
@@ -14,6 +12,7 @@ export const auth = (...roles: ('user' | 'admin')[]) => {
 
 		const accessToken = token.split(' ')[1]
 		const decoded = jwt.verify(accessToken, config.access_secret as string) as JwtPayload
+		
 		console.log(`decoded data from token: `, decoded)
 		const user = await User.doesUserExist(decoded.email)
 		if(!user){

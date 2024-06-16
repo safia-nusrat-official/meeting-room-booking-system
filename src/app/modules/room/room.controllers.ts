@@ -10,12 +10,38 @@ const createRoom = catchAsync(async (req, res) => {
             success: true,
             statusCode: 200,
             data: result,
-            message: 'Room created successfully!',
+            message: 'Room added successfully!',
+        },
+        res
+    )
+})
+const getRoomById = catchAsync(async (req, res) => {
+    const result = await roomServices.getSingleRoomById(req.params.id)
+    sendResponse(
+        {
+            success: true,
+            statusCode: 200,
+            data: result,
+            message: 'Room retrieved successfully!',
+        },
+        res
+    )
+})
+const getRooms = catchAsync(async (req, res) => {
+    const result = await roomServices.getAllRooms(req.query)
+    sendResponse(
+        {
+            success: true,
+            statusCode: 200,
+            data: result,
+            message: result.length?'All rooms retrieved successfully!':"No data found",
         },
         res
     )
 })
 
 export const roomControllers = {
-    createRoom
+    createRoom,
+    getRoomById,
+    getRooms,
 }

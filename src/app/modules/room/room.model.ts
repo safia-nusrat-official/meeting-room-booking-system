@@ -8,7 +8,8 @@ const roomSchema = new Schema<TRoom>({
        },
        roomNo: {
         type:Number,
-        required:true
+        required:true,
+        unique:true
        },
        floorNo: {
         type:Number,

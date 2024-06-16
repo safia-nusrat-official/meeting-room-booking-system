@@ -4,9 +4,8 @@ import {
 } from '../interfaces/errors.interface'
 
 export const handleDuplicateKeyError = (err: any): TGenericErrorResponse => {
-    const regex = /{ name: "([^"]+)" }/
-    const matchRegex = err.errorResponse.errmsg.match(regex)
-    const extractedMsg = matchRegex && matchRegex[1]
+    const matchRegex = err.errorResponse.errmsg.split('{')
+    const extractedMsg = ((matchRegex && matchRegex[1]) as string).split('}')[0]
     const errorSources: TErrorSources = [
         {
             path: Object.keys(err.keyValue)[0],

@@ -13,4 +13,7 @@ router.post(
     roomControllers.createRoom
 )
 
+router.get('/:id', roomControllers.getRoomById)
+router.get('/', roomControllers.getRooms)
+
 export const roomRoutes = router
