@@ -1,5 +1,6 @@
 import { catchAsync } from '../../utils/catchAsync'
 import { sendResponse } from '../../utils/sendResponse'
+import { Room } from './room.model'
 import { roomServices } from './room.services'
 
 const createRoom = catchAsync(async (req, res) => {
@@ -55,10 +56,22 @@ const getRooms = catchAsync(async (req, res) => {
         res
     )
 })
-
+const deleteRoom = catchAsync(async (req, res) => {
+    const result = await roomServices.deleteRoomFromDB(req.params.id)
+    sendResponse(
+        {
+            success: true,
+            statusCode: 200,
+            data: result,
+            message: 'Room deleted successfully!'
+        },
+        res
+    )
+})
 export const roomControllers = {
     createRoom,
     getRoomById,
     getRooms,
+    deleteRoom,
     updateRoom,
 }

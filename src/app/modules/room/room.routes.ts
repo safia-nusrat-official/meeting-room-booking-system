@@ -21,5 +21,6 @@ router.put(
 
 router.get('/:id', roomControllers.getRoomById)
 router.get('/', roomControllers.getRooms)
+router.delete('/:id', auth("admin"), roomControllers.deleteRoom)
 
 export const roomRoutes = router

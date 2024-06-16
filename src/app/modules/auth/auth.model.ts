@@ -29,6 +29,7 @@ const userSchema = new Schema<TUser, TUserModel>({
     password: {
         type: String,
         required: true,
+        select:0
     },
 })
 
@@ -46,7 +47,7 @@ userSchema.post('save', async function () {
 })
 
 userSchema.statics.doesUserExist = async function (email: string) {
-    return await User.findOne({ email })
+    return await User.findOne({ email }).select('password role phone address email name')
 }
 userSchema.statics.doesPasswordMatch = async function (password: string, hashedPassword:string) {
     return await bcrypt.compare(password, hashedPassword)

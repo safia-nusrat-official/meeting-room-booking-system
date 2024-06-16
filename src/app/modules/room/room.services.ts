@@ -5,6 +5,7 @@ import AppError from '../../errors/AppError'
 import { roomSearchableFields } from './room.constants'
 import { TRoom } from './room.interface'
 import { Room } from './room.model'
+import httpStatus from 'http-status'
 
 const insertRoomIntoDB = async (payload: TRoom) => {
     const result = await Room.create(payload)
@@ -61,9 +62,25 @@ const updateRoomIntoDB = async (id: string, payload: Partial<TRoom>) => {
         throw error
     }
 }
+
+const deleteRoomFromDB = async (id: string) => {
+    // make sure to delete all slots referenced to this room
+    // check if the room to be deleted exists!
+    // check if the room to be deleted is already deleted
+    const room = await Room.doesRoomExist(id)
+    if(!room){
+        throw new AppError(404, `Room not found.`)
+    }
+    if(room.isDeleted){
+        throw new AppError(httpStatus.NOT_FOUND, `Room already deleted`)
+    }
+    const result = await Room.findByIdAndUpdate(id, { isDeleted: true }, {new:true})
+    return result
+}
 export const roomServices = {
     insertRoomIntoDB,
     getSingleRoomById,
     getAllRooms,
     updateRoomIntoDB,
+    deleteRoomFromDB,
 }
