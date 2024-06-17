@@ -1,4 +1,6 @@
+import QueryBuilder from '../../builder/QueryBuilder'
 import config from '../../config'
+import { userSearchableFields } from './auth.constants'
 import { TUser, TLoginData } from './auth.interface'
 import { User } from './auth.model'
 import jwt from 'jsonwebtoken'
@@ -24,7 +26,19 @@ const loginUser = async (payload: TLoginData) => {
         payload,
     }
 }
+const getAllUsersFromDB = async (query: Record<string, unknown>) => {
+    const userQuery = new QueryBuilder(User.find(), query)
+        .search(userSearchableFields)
+        .filter()
+        .sort()
+        .paginate()
+        .fields()
+
+    const result = await userQuery.modelQuery
+    return result
+}
 export const authServices = {
     insertUserIntoDB,
     loginUser,
+    getAllUsersFromDB,
 }

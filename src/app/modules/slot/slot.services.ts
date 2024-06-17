@@ -50,7 +50,6 @@ const insertSlotIntoDB = async (payload: TSlot) => {
             },
             { new: true }
         )
-        console.log(insertedSlot)
     })
     const result = await Slot.find({ room })
     return result
@@ -68,13 +67,7 @@ const getAllSlots = async (query: Record<string, unknown>) => {
     return result
 }
 
-const updateSlotIntoDB = async (id: string, payload: Partial<TSlot>) => {}
-
-const deleteSlotFromDB = async (id: string) => {}
-
 export const slotServices = {
     insertSlotIntoDB,
-    getAllSlots,
-    updateSlotIntoDB,
-    deleteSlotFromDB,
+    getAllSlots
 }

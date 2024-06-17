@@ -9,5 +9,9 @@ const createBookingSchemaValidation = z.object({
         slots: z.array(z.string()),
     }),
 })
-
-export const bookingValidations = { createBookingSchemaValidation }
+const updateBookingSchemaValidation = z.object({
+    body:z.object({
+        isConfirmed:z.enum(['canceled', 'confirmed', 'unconfirmed'])
+    })
+})
+export const bookingValidations = { createBookingSchemaValidation, updateBookingSchemaValidation }

@@ -30,7 +30,20 @@ const login = catchAsync(async (req, res) => {
         res
     )
 })
+const getAllUsers = catchAsync(async (req, res) => {
+    const result = await authServices.getAllUsersFromDB(req.query)
+    sendResponse(
+        {
+            success: true,
+            statusCode: 200,
+            data: result,
+            message: result.length ? "All users retrieved successfully!" : "No data found.",
+        },
+        res
+    )
+})
 export const authControllers = {
     signup,
     login,
+    getAllUsers
 }

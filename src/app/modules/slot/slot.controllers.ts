@@ -19,23 +19,8 @@ const createSlot = catchAsync(async (req, res) => {
         res
     )
 })
-const updateSlot = catchAsync(async (req, res) => {
-    console.log(`data received in controller:`, req.body)
-    const { id } = req.params
-    const result = await slotServices.updateSlotIntoDB(id, req.body)
-    sendResponse(
-        {
-            success: true,
-            statusCode: 200,
-            data: result,
-            message: 'Slot updated successfully!',
-        },
-        res
-    )
-})
 
 const getSlots = catchAsync(async (req, res) => {
-    console.log(req.query?.date)
     if(req.query?.date){
         const validateDate = dateValidation
         console.log(validateDate.safeParse(req.query?.date).success)
@@ -58,21 +43,8 @@ const getSlots = catchAsync(async (req, res) => {
         res
     )
 })
-const deleteSlot = catchAsync(async (req, res) => {
-    const result = await slotServices.deleteSlotFromDB(req.params.id)
-    sendResponse(
-        {
-            success: true,
-            statusCode: 200,
-            data: result,
-            message: 'Slot deleted successfully!',
-        },
-        res
-    )
-})
+
 export const slotControllers = {
     createSlot,
     getSlots,
-    deleteSlot,
-    updateSlot,
 }

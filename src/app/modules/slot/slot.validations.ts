@@ -12,7 +12,6 @@ const timeValidation = z.string().refine(
 )
 export const dateValidation = z.string().refine(
     (date) => {
-        // "2024-06-15"
         const dateRegex = /^20\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/
         return dateRegex.test(date)
     },
@@ -33,7 +32,6 @@ const createSlotSchemaValidation = z.object({
                 const { startTime, endTime, date } = bodyProps
                 const startDate = new Date(`${date}T${startTime}:00`)
                 const endDate = new Date(`${date}T${endTime}:00`)
-                console.log(startTime, endTime)
                 return startDate < endDate
             },
             {
@@ -41,11 +39,7 @@ const createSlotSchemaValidation = z.object({
             }
         ),
 })
-const updateSlotSchemaValidation = z.object({
-    body: z.object({}),
-})
 
 export const slotValidations = {
     createSlotSchemaValidation,
-    updateSlotSchemaValidation,
 }
