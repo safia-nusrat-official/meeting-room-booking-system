@@ -1,14 +1,14 @@
-import mongoose from 'mongoose'
-import AppError from '../../errors/AppError'
-import { User } from '../auth/auth.model'
-import { Room } from '../room/room.model'
-import { Slot } from '../slot/slot.model'
-import { TBooking, TBookingStatus, TStatusMap } from './booking.interface'
-import { Booking } from './booking.model'
-import httpStatus from 'http-status'
-import { JwtPayload } from 'jsonwebtoken'
-import QueryBuilder from '../../builder/QueryBuilder'
-import { mapOfCannotUpdateStatusFromAndTo } from './booking.constants'
+import mongoose from "mongoose"
+import AppError from "../../errors/AppError"
+import { User } from "../auth/auth.model"
+import { Room } from "../room/room.model"
+import { Slot } from "../slot/slot.model"
+import { TBooking, TBookingStatus } from "./booking.interface"
+import { Booking } from "./booking.model"
+import httpStatus from "http-status"
+import { JwtPayload } from "jsonwebtoken"
+import QueryBuilder from "../../builder/QueryBuilder"
+import { mapOfCannotUpdateStatusFromAndTo } from "./booking.constants"
 
 const insertBookingIntoDB = async (
     payload: TBooking,
@@ -47,7 +47,6 @@ const insertBookingIntoDB = async (
         }
         for (const slotId of slots) {
             const slotExists = await Slot.findOne({ _id: slotId })
-            console.log(slotExists)
             if (!slotExists) {
                 throw new AppError(404, `Slot not found`)
             }
@@ -74,10 +73,12 @@ const insertBookingIntoDB = async (
                 },
                 { new: true, session }
             )
-            console.log(
-                `updated slots status booked true`,
-                updateSlotBookedStatus
-            )
+            if (!updateSlotBookedStatus) {
+                throw new AppError(
+                    500,
+                    `Failed to update slot isBooked status while creating booking.`
+                )
+            }
         }
         const totalAmount = slots.length * roomExists.pricePerSlot
         const insertBooking = await Booking.create(
@@ -85,20 +86,18 @@ const insertBookingIntoDB = async (
                 {
                     ...payload,
                     totalAmount,
-                    isConfirmed: 'unconfirmed',
+                    isConfirmed: "unconfirmed",
                 },
             ],
             { session }
         )
-        console.log(`inserted booking`, insertBooking)
         await session.commitTransaction()
         await session.endSession()
 
         const result = await Booking.findById(insertBooking[0]._id)
-            .populate('user')
-            .populate('room')
-            .populate('slots')
-        console.log(`booking in db find`, result)
+            .populate("user")
+            .populate("room")
+            .populate("slots")
         return result
     } catch (error) {
         await session.abortTransaction()
@@ -108,7 +107,7 @@ const insertBookingIntoDB = async (
 }
 const getAllBookingsFromDB = async (query: Record<string, unknown>) => {
     const bookingQuery = new QueryBuilder(
-        Booking.find().populate('user').populate('room').populate('slots'),
+        Booking.find().populate("user").populate("room").populate("slots"),
         query
     )
         .filter()
@@ -128,9 +127,9 @@ const getBookingOfUserFromDB = async (
     }
     const userBookingsQuery = new QueryBuilder(
         Booking.find({ user: user._id })
-            .populate('user')
-            .populate('room')
-            .populate('slots'),
+            .populate("user")
+            .populate("room")
+            .populate("slots"),
         query
     )
         .filter()
@@ -142,7 +141,7 @@ const getBookingOfUserFromDB = async (
 }
 const updateBookingStatusIntoDB = async (
     id: string,
-    payload: Pick<TBooking, 'isConfirmed'>
+    payload: Pick<TBooking, "isConfirmed">
 ) => {
     const booking = await Booking.findById(id)
     if (!booking) {
@@ -165,9 +164,51 @@ const updateBookingStatusIntoDB = async (
     const result = await Booking.findByIdAndUpdate(id, payload, { new: true })
     return result
 }
+
+const deleteBookingFromDB = async (id: string) => {
+    const session = await mongoose.startSession()
+    try {
+        session.startTransaction()
+        const booking = await Booking.findById(id)
+        if (!booking) {
+            throw new AppError(404, `Booking not found`)
+        }
+        if (booking.isDeleted) {
+            throw new AppError(404, `Booking already deleted.`)
+        }
+        for (const slot of booking.slots) {
+            const changeSlotBookedStatus = await Slot.findByIdAndUpdate(
+                slot,
+                {
+                    isBooked: false,
+                },
+                { session }
+            )
+            if (!changeSlotBookedStatus) {
+                throw new AppError(
+                    500,
+                    `Failed to update slot isBooked status of the slots in booking.`
+                )
+            }
+        }
+        const result = await Booking.findByIdAndUpdate(
+            id,
+            { isDeleted: true },
+            { new: true, session }
+        )
+        await session.commitTransaction()
+        await session.endSession()
+        return result
+    } catch (error) {
+        await session.abortTransaction()
+        await session.endSession()
+        throw error
+    }
+}
 export const bookingServices = {
     insertBookingIntoDB,
     getAllBookingsFromDB,
     getBookingOfUserFromDB,
     updateBookingStatusIntoDB,
+    deleteBookingFromDB,
 }

@@ -1,12 +1,12 @@
-import { NextFunction, Request, Response } from 'express'
-import { ZodError } from 'zod'
-import config from '../config'
-import { TGenericErrorResponse } from '../interfaces/errors.interface'
-import { handleZodError } from '../errors/handleZodError'
-import { handleValidationError } from '../errors/handleValidationError'
-import { handleCastError } from '../errors/handleCastError'
-import AppError from '../errors/AppError'
-import { handleDuplicateKeyError } from '../errors/handleDuplicateKeyError'
+import { NextFunction, Request, Response } from "express"
+import { ZodError } from "zod"
+import config from "../config"
+import { TGenericErrorResponse } from "../interfaces/errors.interface"
+import { handleZodError } from "../errors/handleZodError"
+import { handleValidationError } from "../errors/handleValidationError"
+import { handleCastError } from "../errors/handleCastError"
+import AppError from "../errors/AppError"
+import { handleDuplicateKeyError } from "../errors/handleDuplicateKeyError"
 
 export function globalErrorHandler(
     err: any,
@@ -23,20 +23,20 @@ export function globalErrorHandler(
 
     let formattedError: TGenericErrorResponse = {
         statusCode: 500,
-        errMsg: 'Something went wrong.',
+        errMsg: "Something went wrong.",
         errorSources: [
             {
-                path: '',
-                message: 'Something went wrong.',
+                path: "",
+                message: "Something went wrong.",
             },
         ],
     }
 
     if (err instanceof ZodError) {
         formattedError = errorHandlers.ZodError(err)
-    } else if (err?.name === 'ValidationError') {
+    } else if (err?.name === "ValidationError") {
         formattedError = errorHandlers.ValidationError(err)
-    } else if (err?.name === 'CastError') {
+    } else if (err?.name === "CastError") {
         formattedError = errorHandlers.CastError(err)
     } else if (err?.code === 11000) {
         formattedError = errorHandlers.DuplicateKeyError(err)
@@ -46,7 +46,7 @@ export function globalErrorHandler(
             errMsg: err.message,
             errorSources: [
                 {
-                    path: '',
+                    path: "",
                     message: err.message,
                 },
             ],
@@ -62,7 +62,7 @@ export function globalErrorHandler(
         succes: false,
         message: errMsg,
         errorSources,
-        stack: config.node_env === 'development' ? err?.stack : null,
+        stack: config.node_env === "development" ? err?.stack : null,
         err,
     })
 }

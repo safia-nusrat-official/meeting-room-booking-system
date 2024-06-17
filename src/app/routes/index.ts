@@ -1,31 +1,34 @@
-import express from 'express'
-import { authRoutes } from '../modules/auth/auth.routes'
-import { roomRoutes } from '../modules/room/room.routes'
-import { slotRoutes } from '../modules/slot/slot.routes'
-import { bookingRoutes, routerToFetchBookingsOfUser } from '../modules/booking/booking.routes'
+import express from "express"
+import { authRoutes } from "../modules/auth/auth.routes"
+import { roomRoutes } from "../modules/room/room.routes"
+import { slotRoutes } from "../modules/slot/slot.routes"
+import {
+    bookingRoutes,
+    routerToFetchBookingsOfUser,
+} from "../modules/booking/booking.routes"
 
 const router = express.Router()
 const applicationRoutes = [
     {
-        path: '/auth',
+        path: "/auth",
         route: authRoutes,
     },
     {
-        path: '/rooms',
+        path: "/rooms",
         route: roomRoutes,
     },
     {
-        path: '/slots',
+        path: "/slots",
         route: slotRoutes,
     },
     {
-        path: '/bookings',
+        path: "/bookings",
         route: bookingRoutes,
     },
     {
-        path:'/my-bookings',
-        route:routerToFetchBookingsOfUser
-    }
+        path: "/my-bookings",
+        route: routerToFetchBookingsOfUser,
+    },
 ]
 
 applicationRoutes.forEach((route) => router.use(route.path, route.route))

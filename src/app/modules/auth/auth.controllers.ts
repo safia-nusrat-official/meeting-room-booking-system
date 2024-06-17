@@ -1,16 +1,15 @@
-import { catchAsync } from '../../utils/catchAsync'
-import { sendResponse } from '../../utils/sendResponse'
-import { authServices } from './auth.services'
+import { catchAsync } from "../../utils/catchAsync"
+import { sendResponse } from "../../utils/sendResponse"
+import { authServices } from "./auth.services"
 
 const signup = catchAsync(async (req, res) => {
-    console.log(`data received in controller:`, req.body)
     const result = await authServices.insertUserIntoDB(req.body)
     sendResponse(
         {
             success: true,
             statusCode: 200,
             data: result,
-            message: 'User registered successfully!',
+            message: "User registered successfully!",
         },
         res
     )
@@ -18,14 +17,14 @@ const signup = catchAsync(async (req, res) => {
 const login = catchAsync(async (req, res) => {
     const { accessToken, payload } = await authServices.loginUser(req.body)
 
-    res.cookie('access-token', accessToken)
+    res.cookie("access-token", accessToken)
     sendResponse(
         {
             success: true,
             statusCode: 200,
             token: accessToken,
             data: payload,
-            message: 'User logged in successfully!',
+            message: "User logged in successfully!",
         },
         res
     )
@@ -37,7 +36,9 @@ const getAllUsers = catchAsync(async (req, res) => {
             success: true,
             statusCode: 200,
             data: result,
-            message: result.length ? "All users retrieved successfully!" : "No data found.",
+            message: result.length
+                ? "All users retrieved successfully!"
+                : "No data found.",
         },
         res
     )
@@ -45,5 +46,5 @@ const getAllUsers = catchAsync(async (req, res) => {
 export const authControllers = {
     signup,
     login,
-    getAllUsers
+    getAllUsers,
 }

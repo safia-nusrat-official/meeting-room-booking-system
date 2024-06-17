@@ -1,5 +1,5 @@
-import { Schema, model } from 'mongoose'
-import { TRoom, TRoomModel } from './room.interface'
+import { Schema, model } from "mongoose"
+import { TRoom, TRoomModel } from "./room.interface"
 
 const roomSchema = new Schema<TRoom, TRoomModel>({
     name: {
@@ -36,4 +36,4 @@ const roomSchema = new Schema<TRoom, TRoomModel>({
 roomSchema.statics.doesRoomExist = async function (id: string) {
     return await Room.findById(id)
 }
-export const Room = model<TRoom, TRoomModel>('room', roomSchema)
+export const Room = model<TRoom, TRoomModel>("room", roomSchema)

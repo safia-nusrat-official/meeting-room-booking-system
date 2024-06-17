@@ -1,12 +1,10 @@
-import mongoose, { Query } from 'mongoose'
-import QueryBuilder from '../../builder/QueryBuilder'
-import config from '../../config'
-import AppError from '../../errors/AppError'
-import { TSlot } from './slot.interface'
-import { Slot } from './slot.model'
-import httpStatus from 'http-status'
-import { Room } from '../room/room.model'
-import { generateSlotTimes } from './slot.utility'
+import mongoose from "mongoose"
+import QueryBuilder from "../../builder/QueryBuilder"
+import AppError from "../../errors/AppError"
+import { TSlot } from "./slot.interface"
+import { Slot } from "./slot.model"
+import { Room } from "../room/room.model"
+import { generateSlotTimes } from "./slot.utility"
 
 const insertSlotIntoDB = async (payload: TSlot) => {
     /**
@@ -15,7 +13,7 @@ const insertSlotIntoDB = async (payload: TSlot) => {
      * step-3: divide slot duration by intervals and generate slots for each
      * step-4: Most importantly check if same room same date and same slot times are being created or not! Donot Duplicate
      */
-
+    const session = await mongoose.startSession()
     const { date, room, endTime, startTime } = payload
     const roomExists = await Room.findById(room)
     if (!roomExists) {
@@ -40,23 +38,38 @@ const insertSlotIntoDB = async (payload: TSlot) => {
         slotInterval,
         totalNumOfSlots
     )
+    try {
+        session.startTransaction()
+        slotTimes.forEach(async (slot) => {
+            const insertedSlot = await Slot.create(
+                [
+                    {
+                        ...slot,
+                        date,
+                        room,
+                    },
+                ],
+                { new: true, session }
+            )
 
-    slotTimes.forEach(async (slot) => {
-        const insertedSlot = await Slot.create(
-            {
-                ...slot,
-                date,
-                room,
-            },
-            { new: true }
-        )
-    })
+            if (!insertedSlot) {
+                throw new AppError(500, `Failed to create slots.`)
+            }
+
+            await session.commitTransaction()
+            await session.endSession()
+        })
+    } catch (error) {
+        await session.abortTransaction()
+        await session.endSession()
+        throw error
+    }
     const result = await Slot.find({ room })
     return result
 }
 const getAllSlots = async (query: Record<string, unknown>) => {
     const slotQuery = new QueryBuilder(
-        Slot.find({ isBooked: false }).populate('room'),
+        Slot.find({ isBooked: false }).populate("room"),
         query
     )
         .filter()
@@ -69,5 +82,5 @@ const getAllSlots = async (query: Record<string, unknown>) => {
 
 export const slotServices = {
     insertSlotIntoDB,
-    getAllSlots
+    getAllSlots,
 }

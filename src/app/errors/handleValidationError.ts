@@ -1,9 +1,9 @@
-import httpStatus from 'http-status'
-import mongoose from 'mongoose'
+import httpStatus from "http-status"
+import mongoose from "mongoose"
 import {
     TErrorSources,
     TGenericErrorResponse,
-} from '../interfaces/errors.interface'
+} from "../interfaces/errors.interface"
 
 export const handleValidationError = (
     err: mongoose.Error.ValidationError
@@ -19,7 +19,7 @@ export const handleValidationError = (
 
     return {
         statusCode: httpStatus.BAD_REQUEST,
-        errMsg: 'Mongoose Validation Error!',
+        errMsg: "Mongoose Validation Error!",
         errorSources,
     }
 }

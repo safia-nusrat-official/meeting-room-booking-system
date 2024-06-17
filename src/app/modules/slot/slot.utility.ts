@@ -17,17 +17,17 @@ export const generateSlotTimes = (
         const slotStartMinute = totalStartMinutes % 60
         const startSlotTime = `${slotStartHour
             .toString()
-            .padStart(2, '0')}:${slotStartMinute.toString().padStart(2, '0')}`
+            .padStart(2, "0")}:${slotStartMinute.toString().padStart(2, "0")}`
 
         const slotEndHour = Math.floor(totalEndMinutes / 60)
         const slotEndMinute = totalEndMinutes % 60
         const endSlotTime = `${slotEndHour
             .toString()
-            .padStart(2, '0')}:${slotEndMinute.toString().padStart(2, '0')}`
+            .padStart(2, "0")}:${slotEndMinute.toString().padStart(2, "0")}`
 
         slotTimes.push({
-            startTime:startSlotTime,
-            endTime:endSlotTime,
+            startTime: startSlotTime,
+            endTime: endSlotTime,
         })
     }
     return slotTimes

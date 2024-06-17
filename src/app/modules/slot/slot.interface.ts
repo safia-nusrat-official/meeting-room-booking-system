@@ -1,11 +1,11 @@
-import { Model, Types } from 'mongoose'
+import { Model, Types } from "mongoose"
 
 export interface TSlot {
-    room: Types.ObjectId;
+    room: Types.ObjectId
     date: string
     startTime: string
-    endTime: string,
-    isBooked?:boolean
+    endTime: string
+    isBooked?: boolean
 }
 
 export interface TSlotModel extends Model<TSlot> {

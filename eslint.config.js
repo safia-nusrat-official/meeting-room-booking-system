@@ -1,9 +1,21 @@
 // @ts-check
 
-import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
+import eslint from "@eslint/js"
+import tseslint from "@typescript-eslint/eslint-plugin"
+import tsParser from "@typescript-eslint/parser"
 
-export default tseslint.config(
-  eslint.configs.recommended,
-  ...tseslint.configs.recommended,
-);
+export default [
+    {
+        files: ["**/*.ts", "**/*.tsx"],
+        languageOptions: {
+            parser: tsParser
+        },
+        plugins: {
+            "@typescript-eslint": tseslint,
+        },
+        rules: {
+            "no-console": "warn",
+            "@typescript-eslint/no-unused-vars": "error",
+        },
+    },
+]

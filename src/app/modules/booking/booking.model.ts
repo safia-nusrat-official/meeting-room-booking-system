@@ -1,5 +1,5 @@
-import { Schema, model } from 'mongoose'
-import { TBooking } from './booking.interface'
+import { Schema, model } from "mongoose"
+import { TBooking } from "./booking.interface"
 
 const bookingSchema = new Schema<TBooking>({
     date: {
@@ -9,17 +9,17 @@ const bookingSchema = new Schema<TBooking>({
     slots: {
         type: [Schema.Types.ObjectId],
         required: true,
-        ref:"slot"
+        ref: "slot",
     },
     room: {
         type: Schema.Types.ObjectId,
         required: true,
-        ref: 'room',
+        ref: "room",
     },
     user: {
         type: Schema.Types.ObjectId,
         required: true,
-        ref: 'user',
+        ref: "user",
     },
     totalAmount: {
         type: Number,
@@ -27,8 +27,8 @@ const bookingSchema = new Schema<TBooking>({
     },
     isConfirmed: {
         type: String,
-        enum: ['canceled', 'confirmed', 'unconfirmed'],
-        default: 'unconfirmed',
+        enum: ["canceled", "confirmed", "unconfirmed"],
+        default: "unconfirmed",
     },
     isDeleted: {
         type: Boolean,
@@ -36,4 +36,4 @@ const bookingSchema = new Schema<TBooking>({
     },
 })
 
-export const Booking = model<TBooking>('booking', bookingSchema)
+export const Booking = model<TBooking>("booking", bookingSchema)

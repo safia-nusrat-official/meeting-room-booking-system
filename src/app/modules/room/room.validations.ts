@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from "zod"
 
 const createRoomSchemaValidation = z.object({
     body: z.object({
@@ -21,4 +21,7 @@ const updateRoomSchemaValidation = z.object({
     }),
 })
 
-export const roomValidations = { createRoomSchemaValidation, updateRoomSchemaValidation }
+export const roomValidations = {
+    createRoomSchemaValidation,
+    updateRoomSchemaValidation,
+}

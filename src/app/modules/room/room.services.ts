@@ -1,11 +1,10 @@
-import mongoose from 'mongoose'
-import QueryBuilder from '../../builder/QueryBuilder'
-import config from '../../config'
-import AppError from '../../errors/AppError'
-import { roomSearchableFields } from './room.constants'
-import { TRoom } from './room.interface'
-import { Room } from './room.model'
-import httpStatus from 'http-status'
+import mongoose from "mongoose"
+import QueryBuilder from "../../builder/QueryBuilder"
+import AppError from "../../errors/AppError"
+import { roomSearchableFields } from "./room.constants"
+import { TRoom } from "./room.interface"
+import { Room } from "./room.model"
+import httpStatus from "http-status"
 
 const insertRoomIntoDB = async (payload: TRoom) => {
     const result = await Room.create(payload)
@@ -35,10 +34,13 @@ const updateRoomIntoDB = async (id: string, payload: Partial<TRoom>) => {
         session.startTransaction()
         const room = await Room.findById(id)
         if (!room) {
-            throw new AppError(404, 'Room not found.')
+            throw new AppError(404, "Room not found.")
         }
         if (Object.keys(payload).includes("isDeleted")) {
-            throw new AppError(404, "You can't update isDeleted field via PUT route.")
+            throw new AppError(
+                404,
+                "You can't update isDeleted field via PUT route."
+            )
         }
         if (amenities && amenities.length) {
             await Room.findOneAndUpdate(
@@ -56,10 +58,8 @@ const updateRoomIntoDB = async (id: string, payload: Partial<TRoom>) => {
         )
         await session.commitTransaction()
         await session.endSession()
-        console.log(result)
         return result
     } catch (error) {
-        console.log(error)
         await session.abortTransaction()
         await session.endSession()
         throw error
@@ -67,17 +67,18 @@ const updateRoomIntoDB = async (id: string, payload: Partial<TRoom>) => {
 }
 
 const deleteRoomFromDB = async (id: string) => {
-    // make sure to delete all slots referenced to this room
-    // check if the room to be deleted exists!
-    // check if the room to be deleted is already deleted
     const room = await Room.doesRoomExist(id)
-    if(!room){
+    if (!room) {
         throw new AppError(404, `Room not found.`)
     }
-    if(room.isDeleted){
+    if (room.isDeleted) {
         throw new AppError(httpStatus.NOT_FOUND, `Room already deleted`)
     }
-    const result = await Room.findByIdAndUpdate(id, { isDeleted: true }, {new:true})
+    const result = await Room.findByIdAndUpdate(
+        id,
+        { isDeleted: true },
+        { new: true }
+    )
     return result
 }
 export const roomServices = {

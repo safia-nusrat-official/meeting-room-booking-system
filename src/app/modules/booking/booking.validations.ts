@@ -1,5 +1,5 @@
-import { z } from 'zod'
-import { dateValidation } from '../slot/slot.validations'
+import { z } from "zod"
+import { dateValidation } from "../slot/slot.validations"
 
 const createBookingSchemaValidation = z.object({
     body: z.object({
@@ -10,8 +10,11 @@ const createBookingSchemaValidation = z.object({
     }),
 })
 const updateBookingSchemaValidation = z.object({
-    body:z.object({
-        isConfirmed:z.enum(['canceled', 'confirmed', 'unconfirmed'])
-    })
+    body: z.object({
+        isConfirmed: z.enum(["canceled", "confirmed", "unconfirmed"]),
+    }),
 })
-export const bookingValidations = { createBookingSchemaValidation, updateBookingSchemaValidation }
+export const bookingValidations = {
+    createBookingSchemaValidation,
+    updateBookingSchemaValidation,
+}

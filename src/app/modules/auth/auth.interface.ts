@@ -6,7 +6,7 @@ export interface TUser {
     password: string
     phone: string
     address: string
-    role: 'admin' | 'user'
+    role: "admin" | "user"
 }
 
 export type TLoginData = {
@@ -14,7 +14,10 @@ export type TLoginData = {
     password: string
 }
 
-export interface TUserModel extends Model<TUser>{
-    doesUserExist(email:string):Promise<TUser>|null,
-    doesPasswordMatch(inputPassword:string, hashedPassword:string):Promise<boolean>
+export interface TUserModel extends Model<TUser> {
+    doesUserExist(email: string): Promise<TUser> | null
+    doesPasswordMatch(
+        inputPassword: string,
+        hashedPassword: string
+    ): Promise<boolean>
 }

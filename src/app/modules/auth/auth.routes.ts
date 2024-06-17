@@ -7,15 +7,15 @@ import { auth } from "../../middlewares/auth"
 const router = express.Router()
 
 router.post(
-    '/signup', 
-    validateRequest(authValidations.signUpValidation), 
+    "/signup",
+    validateRequest(authValidations.signUpValidation),
     authControllers.signup
 )
 router.post(
-    '/login', 
-    validateRequest(authValidations.loginValidation), 
+    "/login",
+    validateRequest(authValidations.loginValidation),
     authControllers.login
 )
-router.get('/users', auth('admin'), authControllers.getAllUsers)
+router.get("/users", auth("admin"), authControllers.getAllUsers)
 
 export const authRoutes = router

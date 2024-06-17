@@ -1,7 +1,7 @@
-import { Schema, model } from 'mongoose'
-import { TUser, TUserModel } from './auth.interface'
-import bcrypt from 'bcrypt'
-import config from '../../config'
+import { Schema, model } from "mongoose"
+import { TUser, TUserModel } from "./auth.interface"
+import bcrypt from "bcrypt"
+import config from "../../config"
 
 const userSchema = new Schema<TUser, TUserModel>({
     email: {
@@ -23,34 +23,38 @@ const userSchema = new Schema<TUser, TUserModel>({
     },
     role: {
         type: String,
-        enum: ['admin', 'user'],
+        enum: ["admin", "user"],
         required: true,
     },
     password: {
         type: String,
         required: true,
-        select:0
+        select: 0,
     },
 })
 
-userSchema.pre('save', async function (next) {
+userSchema.pre("save", async function (next) {
     this.password = await bcrypt.hash(
         this.password,
         Number(config.bcrypt_salt_rounds)
     )
-    console.log(this.password)
     next()
 })
 
-userSchema.post('save', async function () {
-    this.password = ''
+userSchema.post("save", async function () {
+    this.password = ""
 })
 
 userSchema.statics.doesUserExist = async function (email: string) {
-    return await User.findOne({ email }).select('password role phone address email name')
+    return await User.findOne({ email }).select(
+        "password role phone address email name"
+    )
 }
-userSchema.statics.doesPasswordMatch = async function (password: string, hashedPassword:string) {
+userSchema.statics.doesPasswordMatch = async function (
+    password: string,
+    hashedPassword: string
+) {
     return await bcrypt.compare(password, hashedPassword)
 }
 
-export const User = model<TUser, TUserModel>('user', userSchema)
+export const User = model<TUser, TUserModel>("user", userSchema)

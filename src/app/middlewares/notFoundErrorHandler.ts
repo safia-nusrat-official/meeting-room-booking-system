@@ -1,5 +1,5 @@
-import { NextFunction, Request, Response } from 'express'
-import httpStatus from 'http-status'
+import { NextFunction, Request, Response } from "express"
+import httpStatus from "http-status"
 export function notFoundErrorHandler(
     req: Request,
     res: Response,
@@ -7,7 +7,7 @@ export function notFoundErrorHandler(
 ) {
     return res.status(httpStatus.NOT_FOUND).send({
         success: false,
-        message: 'Route not found',
+        message: "Route not found",
     })
 
     next()

@@ -7,20 +7,20 @@ import { auth } from "../../middlewares/auth"
 const router = express.Router()
 
 router.post(
-    '/', 
+    "/",
     auth("admin"),
-    validateRequest(roomValidations.createRoomSchemaValidation), 
+    validateRequest(roomValidations.createRoomSchemaValidation),
     roomControllers.createRoom
 )
 router.put(
-    '/:id', 
+    "/:id",
     auth("admin"),
-    validateRequest(roomValidations.updateRoomSchemaValidation), 
+    validateRequest(roomValidations.updateRoomSchemaValidation),
     roomControllers.updateRoom
 )
 
-router.get('/:id', roomControllers.getRoomById)
-router.get('/', roomControllers.getRooms)
-router.delete('/:id', auth("admin"), roomControllers.deleteRoom)
+router.get("/:id", roomControllers.getRoomById)
+router.get("/", roomControllers.getRooms)
+router.delete("/:id", auth("admin"), roomControllers.deleteRoom)
 
 export const roomRoutes = router
