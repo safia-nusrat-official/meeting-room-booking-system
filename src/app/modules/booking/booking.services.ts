@@ -87,7 +87,7 @@ const insertBookingIntoDB = async (
                 )
             }
         }
-        const totalAmount = slots.length * roomExists.pricePerSlot
+        const totalAmount = uniqueSlotIds.length * roomExists.pricePerSlot
         const insertBooking = await Booking.create(
             [
                 {
@@ -117,7 +117,10 @@ const insertBookingIntoDB = async (
 }
 const getAllBookingsFromDB = async (query: Record<string, unknown>) => {
     const bookingQuery = new QueryBuilder(
-        Booking.find({isDeleted:false}).populate("user").populate("room").populate("slots"),
+        Booking.find({ isDeleted: false })
+            .populate("user")
+            .populate("room")
+            .populate("slots"),
         query
     )
         .filter()

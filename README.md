@@ -18,9 +18,8 @@ towards successful interactions with the platform.
 - [**Contact**](#contact)
 
 ## Necessary Links 🔗
-[![Live Server Link](https://img.shields.io/badge/Live_Server_Link-blue)](https://vercel.com/sattarabdussattar23gmailcoms-projects)
-[![Project Overview Video](https://img.shields.io/badge/Project_Overview_Video_Link-red)](https://vercel.com/sattarabdussattar23gmailcoms-projects)
-[![Requirement Analysis Doc](https://img.shields.io/badge/Requirement_Analysis_Doc-green)](https://docs.google.com/document/d/1PLmrXaAovoR4U_WXOPiLBUyTg3iJFsbxpuH1ITuuGhY/edit?usp=sharing)
+[![Live Server Link](https://img.shields.io/badge/Live_Server_Link-blue)](https://meeting-room-booking-system-phi.vercel.app/)
+[![Requirement Analysis Doc](https://img.shields.io/badge/Requirement_Analysis_Doc-red)](https://docs.google.com/document/d/1PLmrXaAovoR4U_WXOPiLBUyTg3iJFsbxpuH1ITuuGhY/edit?usp=sharing)
 [![ER-Diagram](https://img.shields.io/badge/ER_Diagram-yellow)](https://drive.google.com/file/d/1vPxcZldltHjzheNW9MrNKm4X8sK0Da-d/view?usp=sharing)
 
 ## Features ✨
@@ -33,7 +32,7 @@ towards successful interactions with the platform.
 
 ## Getting Started 🚀
 ### Prerequisites 📋
-Before you begin, please ensure you have the follwoing dependencies installed:
+Before you begin, please ensure you have the following dependencies installed:
 ```bash
 Node.js (v20.11.0 or later)
 npm (v20.11.0 or later)
@@ -66,6 +65,11 @@ JWT_ACCESS_SECRET=b60ba0d876aaab06b0ea11f589dd207c
 1. To run the development server, hit:
 ```bash
 npm run dev
+```
+Or, if you want to run the production server:
+```bash
+npm run build
+npm run start
 ```
 Your server is running on [http://localhost:5000](http://localhost:5000) .
 
@@ -126,7 +130,7 @@ tZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_a
  
  _**N.B:** Did you know you can perform search, filter, sort operations on the result via query parameters?😋_
  
- _Try it out! `/api/rooms?capacity=20&searchTerm=room&sort=-pricePerSlot&page=2&limit=2`_
+ _Try it out! `sort=-pricePerSlot&page=2&limit=2`_
  
   4. **Update Room ( _Admin accessible only_ ):**
        - *Route:* **PUT** `/api/rooms/:id`
@@ -143,7 +147,7 @@ tZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_a
     "amenities":["-Projector", "LED Lights"]
   }
 ```
-  _tip: add a "-" hyphen before the elements in amenities to remove them from the existing amenities list_
+  _tip: add a `-` hyphen before the elements in amenities to remove them from the existing amenities list._
 
   5. **Delete a Room ( _Admin accessible only_ ):**
      - *Route:* **DELETE** `/api/rooms/:id`
@@ -194,7 +198,7 @@ tZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_a
     "user": "60d9c4e4f3b4b544b8b8d1c4"
   }
 ```
-  2. **Get your Bookings ( _Admin accessible only_ ):**
+  2. **Get your Bookings ( _Authenticated User accessible only_ ):**
      - *Route:* **GET** `/api/my-bookings`
   3. **Get all available Bookings of users ( _Admin accessible only_ ):**
      - *Route:* **GET** `/api/rooms/`
@@ -218,6 +222,8 @@ tZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_a
     "isConfirmed": "confirmed"
   }
 ```
+_N.B: You can change the booking status from `unconfirmed` to `canceled` or `confirmed`_
+
   5. **Delete a Booking ( _Admin accessible only_ ):**
      - *Route:* **DELETE** `/api/bookings/:id`
      - *Request Headers:*
@@ -230,9 +236,7 @@ tZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_a
 _**N.B:** Keep exploring many other routes 😺_
 
 ## Project Structure 📂
-This project follows Modular structure to ensure scalability, flexibility and maintainability, allowing easier management of code and better
-organization. Each module encapsulates a specific feature of the application, such as, room, booking and slot managmanagement. The main
-components of the project structure are:
+This project follows Modular structure to ensure scalability, flexibility and maintainability, allowing easier management of code and better organization. Each module encapsulates a specific feature of the application, such as, room, booking and slot management. The main components of the project structure are:
 ```
 meeting-room-booking-system/
 ├── src/
@@ -315,7 +319,6 @@ meeting-room-booking-system/
 - Formatters: **[ESLint](https://eslint.org/)**, **[Prettier](https://prettier.io/)**
   
 ## Contact 📞
-For any enquires or issues related installation, please reach out to us at _safia.nusrat.official@gmail.com_
-We welcome yor feedback and are here to guide you through your troubles and clean up any confusions. Thank you 😊!
+For any enquires or issues related installation, please reach out to us at _safia.nusrat.official@gmail.com_. We welcome yor feedback and are here to guide you through your troubles and clean up any confusions. Thank you 😊!
 
 _[Safia Nusrat](https://github.com/safia-nusrat-official)_

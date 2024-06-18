@@ -10,12 +10,6 @@ class QueryBuilder<T> {
     }
 
     search(searchableFields: string[]) {
-        /* searchTerm -> /rooms?searchTerm=conference&floorNo=3
-        reqQuery: { searchTerm:"conference", floorNo:3 }
-
-        running search key *conference* on name:String, floorNo:Number fields.
-        floorNo: "conferecne" !!! floorNo only accepts numbers
-        */
         const searchTerm = this?.reqQuery?.searchTerm as string
         if (searchTerm) {
             this.modelQuery = this.modelQuery.find({
