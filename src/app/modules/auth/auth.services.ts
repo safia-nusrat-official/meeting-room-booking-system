@@ -6,6 +6,10 @@ import { User } from "./auth.model"
 import jwt from "jsonwebtoken"
 
 const insertUserIntoDB = async (payload: TUser) => {
+    const user = await User.doesUserExist(payload.email)
+    if (user) {
+        throw new Error("User already exists.")
+    }
     const result = await User.create(payload)
     const data = await User.findById(result._id)
     return data
@@ -19,7 +23,7 @@ const loginUser = async (payload: TLoginData) => {
         throw new Error("Incorrect Password.")
     }
     const accessToken = jwt.sign(payload, config.access_secret as string, {
-        expiresIn: "1h",
+        expiresIn: "1d",
     })
     return {
         accessToken,

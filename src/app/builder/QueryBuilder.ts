@@ -52,10 +52,12 @@ class QueryBuilder<T> {
         return this
     }
     paginate() {
-        const limit: number = Number(this.reqQuery?.limit) || 5
-        const page: number = Number(this.reqQuery?.page) || 1
+        const limit: number = Number(this.reqQuery?.limit)
+        const page: number = Number(this.reqQuery?.page)
         const skip = page && limit ? (page - 1) * limit : 0
-        this.modelQuery = this.modelQuery.skip(skip).limit(limit)
+        if(limit&&page){
+            this.modelQuery = this.modelQuery.skip(skip).limit(limit)
+        }
         return this
     }
     fields() {

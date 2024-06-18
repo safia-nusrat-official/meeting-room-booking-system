@@ -4,8 +4,9 @@ import AppError from "../errors/AppError"
 import { User } from "../modules/auth/auth.model"
 import { catchAsync } from "../utils/catchAsync"
 import jwt, { JwtPayload } from "jsonwebtoken"
+import { TUserRoles } from "../modules/auth/auth.interface"
 
-export const auth = (...roles: ("user" | "admin")[]) => {
+export const auth = (...roles:TUserRoles[] ) => {
     return catchAsync(async (req, res, next) => {
         const token = req.headers.authorization
         if (!token) {
@@ -16,7 +17,7 @@ export const auth = (...roles: ("user" | "admin")[]) => {
         if (accessToken[0] !== "Bearer") {
             throw new AppError(
                 httpStatus.BAD_REQUEST,
-                `You must include Bearer at the beginning of the token followd by a space.`
+                `You must include Bearer at the beginning of the token followed by a space.`
             )
         }
 
@@ -46,7 +47,7 @@ export const auth = (...roles: ("user" | "admin")[]) => {
                         throw new Error(`Invalid user token`)
                     }
                     if (roles && !roles.includes(user.role)) {
-                        throw new Error(`Forbidden Access`)
+                        throw new Error(`You have no access to this route`)
                     }
                     req.user = decoded as JwtPayload
 

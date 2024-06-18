@@ -5,23 +5,35 @@ import { TSlot } from "./slot.interface"
 import { Slot } from "./slot.model"
 import { Room } from "../room/room.model"
 import { generateSlotTimes } from "./slot.utility"
+import httpStatus from "http-status"
 
 const insertSlotIntoDB = async (payload: TSlot) => {
     /**
-     * step-1: check if reference id of room exists & isDeleted===false
-     * step-2: create date and get slot duration
-     * step-3: divide slot duration by intervals and generate slots for each
-     * step-4: Most importantly check if same room same date and same slot times are being created or not! Donot Duplicate
+     * Creates 60-minute interval slots for a room on a specific date
+     *
+     * e.g. As there will be more than one write operations to insert each slots, use transaction & rollback
+     *
+     * step-1: check if the room with the given reference id exists and is not deleted
+     * step-2: create start and end Date with given startTime, endTime and calculate total slot duration
+     * step-3: divide slot duration by slot interval and generate slots for each interval
+     * step-4: Ensure no duplicate slot are created for the same room on same date with same start and end time.
+     *
+     * @param {TSlot} payload - Slot details containing
+     * @returns {Promise<Array<TSlot>>} - The array of slots created for the room
+     * @throws {AppError} - Throws an error if a room is not found, deleted or a creation fails
      */
+
     const session = await mongoose.startSession()
     const { date, room, endTime, startTime } = payload
+
     const roomExists = await Room.findById(room)
     if (!roomExists) {
         throw new AppError(404, `Room not found.`)
     }
     if (roomExists.isDeleted) {
-        throw new AppError(404, `Room deleted.`)
+        throw new AppError(404, `Room of the given room id has been deleted.`)
     }
+
     const startDate = new Date(`${date}T${startTime}:00`)
     const endDate = new Date(`${date}T${endTime}:00`)
 
@@ -30,8 +42,15 @@ const insertSlotIntoDB = async (payload: TSlot) => {
 
     const totalSlotDuration = endSlotMinutes - startSlotMinutes
     const slotInterval = 60
-    const totalNumOfSlots = Math.ceil(totalSlotDuration / slotInterval)
 
+    if (totalSlotDuration < slotInterval) {
+        throw new AppError(
+            400,
+            `As the total duration from ${startTime} to ${endTime} is less than 60 minutes no slots were created.`
+        )
+    }
+
+    const totalNumOfSlots = Math.floor(totalSlotDuration / slotInterval)
     const slotTimes = generateSlotTimes(
         startSlotMinutes,
         endSlotMinutes,
@@ -40,7 +59,19 @@ const insertSlotIntoDB = async (payload: TSlot) => {
     )
     try {
         session.startTransaction()
-        slotTimes.forEach(async (slot) => {
+        for (const slot of slotTimes) {
+            const slotAlreadyExists = await Slot.findOne({
+                ...slot,
+                date,
+                room,
+            })
+            if (slotAlreadyExists) {
+                throw new AppError(
+                    httpStatus.CONFLICT,
+                    `There is already a slot created from ${slot.startTime} to ${slot.endTime} on ${date} in room no. ${roomExists.roomNo}`
+                )
+            }
+
             const insertedSlot = await Slot.create(
                 [
                     {
@@ -55,16 +86,16 @@ const insertSlotIntoDB = async (payload: TSlot) => {
             if (!insertedSlot) {
                 throw new AppError(500, `Failed to create slots.`)
             }
+        }
 
-            await session.commitTransaction()
-            await session.endSession()
-        })
+        await session.commitTransaction()
+        await session.endSession()
     } catch (error) {
         await session.abortTransaction()
         await session.endSession()
         throw error
     }
-    const result = await Slot.find({ room })
+    const result = await Slot.find({ room, date }).populate("room")
     return result
 }
 const getAllSlots = async (query: Record<string, unknown>) => {

@@ -9,7 +9,7 @@ export const handleDuplicateKeyError = (err: any): TGenericErrorResponse => {
     const errorSources: TErrorSources = [
         {
             path: Object.keys(err.keyValue)[0],
-            message: `'${extractedMsg}' already exists`,
+            message: err?.errorResponse?.errmsg||`'${extractedMsg}' already exists`,
         },
     ]
     return {

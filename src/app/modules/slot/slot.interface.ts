@@ -11,3 +11,5 @@ export interface TSlot {
 export interface TSlotModel extends Model<TSlot> {
     doesSlotExist(id: string): Promise<TSlot> | null
 }
+
+export type TSlotTime = { startTime: string; endTime: string }

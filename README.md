@@ -20,8 +20,8 @@ towards successful interactions with the platform.
 ## Necessary Links 🔗
 [![Live Server Link](https://img.shields.io/badge/Live_Server_Link-blue)](https://vercel.com/sattarabdussattar23gmailcoms-projects)
 [![Project Overview Video](https://img.shields.io/badge/Project_Overview_Video_Link-red)](https://vercel.com/sattarabdussattar23gmailcoms-projects)
-[![Requirement Analysis Doc](https://img.shields.io/badge/Requirement_Analysis_Doc-green)](https://vercel.com/sattarabdussattar23gmailcoms-projects)
-[![ER-Diagram](https://img.shields.io/badge/ER_Diagram-yellow)](https://vercel.com/sattarabdussattar23gmailcoms-projects)
+[![Requirement Analysis Doc](https://img.shields.io/badge/Requirement_Analysis_Doc-green)](https://docs.google.com/document/d/1PLmrXaAovoR4U_WXOPiLBUyTg3iJFsbxpuH1ITuuGhY/edit?usp=sharing)
+[![ER-Diagram](https://img.shields.io/badge/ER_Diagram-yellow)](https://drive.google.com/file/d/1vPxcZldltHjzheNW9MrNKm4X8sK0Da-d/view?usp=sharing)
 
 ## Features ✨
 - Authentication & Authorization
@@ -119,14 +119,14 @@ tZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_a
     "amenities": ["Projector", "Whiteboard"]
   }
 ```
-  2. Get a Room:
+  2. **Get a Room:**
      - *Route:* **GET** `/api/rooms/:id`
-  3. Get all Rooms:
+  3. **Get all available Rooms:**
      - *Route:* **GET** `/api/rooms/`
  
  _**N.B:** Did you know you can perform search, filter, sort operations on the result via query parameters?😋_
  
- _Try it out! `/api/rooms?capacity=20&searchTerm=Conference&sort=-pricePerSlot`_
+ _Try it out! `/api/rooms?capacity=20&searchTerm=room&sort=-pricePerSlot&page=2&limit=2`_
  
   4. **Update Room ( _Admin accessible only_ ):**
        - *Route:* **PUT** `/api/rooms/:id`
@@ -139,9 +139,12 @@ tZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_a
   - *Request Body:*
 ```json
   {
-    "pricePerSlot": 300
+    "pricePerSlot": 300,
+    "amenities":["-Projector", "LED Lights"]
   }
 ```
+  _tip: add a "-" hyphen before the elements in amenities to remove them from the existing amenities list_
+
   5. **Delete a Room ( _Admin accessible only_ ):**
      - *Route:* **DELETE** `/api/rooms/:id`
      - *Request Headers:*
@@ -169,7 +172,7 @@ tZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_a
     "endTime": "14:00"
   }  
 ```
-  2. Get all available slots:
+  2. **Get all available slots:**
      - *Route:* **GET** `/api/slots/availability`
      _N.B: You can use query params like `/api/slots/availability?date=2024-06-16` and othehrs to filter slots_
 
@@ -193,7 +196,7 @@ tZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_a
 ```
   2. **Get your Bookings ( _Admin accessible only_ ):**
      - *Route:* **GET** `/api/my-bookings`
-  3. **Get all Bookings of all Users ( _Admin accessible only_ ):**
+  3. **Get all available Bookings of users ( _Admin accessible only_ ):**
      - *Route:* **GET** `/api/rooms/`
      - *Request Headers:*
 ```bash

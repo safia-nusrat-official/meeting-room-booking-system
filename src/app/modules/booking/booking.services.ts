@@ -45,19 +45,26 @@ const insertBookingIntoDB = async (
                 `A booking has already been placed on ${date} at room no. ${roomExists.roomNo} by ${userExists.email}.`
             )
         }
-        for (const slotId of slots) {
+
+        // to remove any duplicate slots from being booked
+        const uniqueSlotIds = [...new Set(slots)]
+
+        for (const slotId of uniqueSlotIds) {
             const slotExists = await Slot.findOne({ _id: slotId })
             if (!slotExists) {
                 throw new AppError(404, `Slot not found`)
             }
+            if (slotExists.date !== date) {
+                throw new AppError(
+                    404,
+                    `No slot ${slotExists.startTime}-${slotExists.endTime} not found on ${date} in ${roomExists.name}.`
+                )
+            }
             if (slotExists.room._id.toString() !== room.toString()) {
                 throw new AppError(
                     404,
-                    `No slot ${slotExists.startTime}-${slotExists.endTime} not found for room no. ${roomExists.roomNo}.`
+                    `No slot ${slotExists.startTime}-${slotExists.endTime} found on ${date} that belongs to room no. ${roomExists.roomNo}.`
                 )
-            }
-            if (slotExists.date !== date) {
-                throw new AppError(404, `No slot not found on ${date}.`)
             }
             if (slotExists.isBooked) {
                 throw new AppError(
@@ -84,7 +91,10 @@ const insertBookingIntoDB = async (
         const insertBooking = await Booking.create(
             [
                 {
-                    ...payload,
+                    date,
+                    user,
+                    room,
+                    slots: uniqueSlotIds,
                     totalAmount,
                     isConfirmed: "unconfirmed",
                 },
@@ -107,7 +117,7 @@ const insertBookingIntoDB = async (
 }
 const getAllBookingsFromDB = async (query: Record<string, unknown>) => {
     const bookingQuery = new QueryBuilder(
-        Booking.find().populate("user").populate("room").populate("slots"),
+        Booking.find({isDeleted:false}).populate("user").populate("room").populate("slots"),
         query
     )
         .filter()
@@ -156,12 +166,22 @@ const updateBookingStatusIntoDB = async (
         mapOfCannotUpdateStatusFromAndTo[currentStatus][newStatus]
     ) {
         throw new AppError(
-            404,
-            `Can't update booking status from ${currentStatus} to ${newStatus}`
+            400,
+            `Can't update booking status from ${currentStatus} to ${newStatus}. You can either confirm or cancel an uncorfirmed booking.`
+        )
+    }
+    if (Object.keys(payload).includes("isDeleted")) {
+        throw new AppError(
+            400,
+            `You can't udate delete status of a booking through this route!`
         )
     }
 
-    const result = await Booking.findByIdAndUpdate(id, payload, { new: true })
+    const result = await Booking.findByIdAndUpdate(
+        id,
+        { isConfirmed: payload.isConfirmed },
+        { new: true }
+    )
     return result
 }
 

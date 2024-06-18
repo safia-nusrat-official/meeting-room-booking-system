@@ -7,6 +7,10 @@ import { Room } from "./room.model"
 import httpStatus from "http-status"
 
 const insertRoomIntoDB = async (payload: TRoom) => {
+    const room = await Room.findOne({ roomNo: payload.roomNo })
+    if (room) {
+        throw new AppError(404, `Room No. ${room.roomNo} already exists.`)
+    }
     const result = await Room.create(payload)
     return result
 }
@@ -18,7 +22,7 @@ const getSingleRoomById = async (id: string) => {
     return result
 }
 const getAllRooms = async (query: Record<string, unknown>) => {
-    const roomQuery = new QueryBuilder(Room.find(), query)
+    const roomQuery = new QueryBuilder(Room.find({isDeleted:false}), query)
         .search(roomSearchableFields)
         .filter()
         .sort()
@@ -36,6 +40,9 @@ const updateRoomIntoDB = async (id: string, payload: Partial<TRoom>) => {
         if (!room) {
             throw new AppError(404, "Room not found.")
         }
+        if (room.isDeleted) {
+            throw new AppError(404, "Room has been deleted.")
+        }
         if (Object.keys(payload).includes("isDeleted")) {
             throw new AppError(
                 404,
@@ -43,13 +50,30 @@ const updateRoomIntoDB = async (id: string, payload: Partial<TRoom>) => {
             )
         }
         if (amenities && amenities.length) {
-            await Room.findOneAndUpdate(
+            const amenitiesToAdd = amenities.filter(val=>!val.startsWith("-"));
+            const amenitiesToDelete = amenities.filter(val=>val.startsWith("-")).map(val=>val.split("-")[1])
+            
+            const removeAmenities = await Room.findOneAndUpdate(
                 { _id: id },
                 {
-                    $addToSet: { amenities: { $each: amenities } },
+                    $pull: { amenities: { $in:amenitiesToDelete } }
                 },
-                { session }
-            )
+                { new:true, session }
+            );
+            if(!removeAmenities){
+                throw new AppError(500, `Failed to remove amenities.`)
+            }
+
+            const addAmenities = await Room.findOneAndUpdate(
+                { _id: id },
+                {
+                    $addToSet: { amenities: { $each: amenitiesToAdd } }
+                },
+                { new:true, session }
+            );
+            if(!addAmenities){
+                throw new AppError(500, `Failed to add amenities.`)
+            }
         }
         const result = await Room.findOneAndUpdate(
             { _id: id },

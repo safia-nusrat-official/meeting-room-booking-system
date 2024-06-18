@@ -2,23 +2,33 @@ import { z } from "zod"
 
 const createRoomSchemaValidation = z.object({
     body: z.object({
-        name: z.string(),
+        name: z
+            .string()
+            .min(1, { message: "Don't provide an empty string as a name" }),
         roomNo: z.number(),
         floorNo: z.number(),
         capacity: z.number(),
         pricePerSlot: z.number(),
-        amenities: z.array(z.string()),
+        amenities: z.array(
+            z.string().min(1, { message: "Don't provide an empty string." })
+        ),
     }),
 })
 const updateRoomSchemaValidation = z.object({
-    body: z.object({
-        name: z.string().optional(),
-        roomNo: z.number().optional(),
-        floorNo: z.number().optional(),
-        capacity: z.number().optional(),
-        pricePerSlot: z.number().optional(),
-        amenities: z.array(z.string().optional()).optional(),
-    }),
+    body: z
+        .object({
+            name: z
+                .string()
+                .min(1, { message: "Don't provide an empty string as a name" }),
+            roomNo: z.number(),
+            floorNo: z.number(),
+            capacity: z.number(),
+            pricePerSlot: z.number(),
+            amenities: z.array(
+                z.string().min(1, { message: "Don't provide an empty string." })
+            ),
+        })
+        .partial(),
 })
 
 export const roomValidations = {

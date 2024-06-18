@@ -20,7 +20,7 @@ router.put(
 )
 
 router.get("/:id", roomControllers.getRoomById)
-router.get("/", roomControllers.getRooms)
+router.get("/", roomControllers.getAllAvailableRooms)
 router.delete("/:id", auth("admin"), roomControllers.deleteRoom)
 
 export const roomRoutes = router
