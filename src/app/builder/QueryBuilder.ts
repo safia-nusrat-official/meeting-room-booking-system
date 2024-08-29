@@ -17,7 +17,7 @@ class QueryBuilder<T> {
                     (field) =>
                         ({
                             [field]: { $regex: searchTerm, $options: "i" },
-                        }) as FilterQuery<T>
+                        } as FilterQuery<T>)
                 ),
             })
         }
@@ -31,8 +31,37 @@ class QueryBuilder<T> {
             "limit",
             "page",
             "fields",
+            "priceMax",
+            "priceMin",
+            "minCapacity",
+            "maxCapacity",
         ]
         const filterQueries = { ...this.reqQuery }
+        console.log(filterQueries)
+        if (filterQueries?.priceMin && filterQueries?.priceMax) {
+            this.modelQuery = this.modelQuery.find({
+                pricePerSlot: {
+                    $lte: Number(filterQueries?.priceMax),
+                    $gte: Number(filterQueries?.priceMin),
+                },
+            })
+        }
+        if (filterQueries?.minRating && filterQueries?.maxRating) {
+            this.modelQuery = this.modelQuery.find({
+                rating: {
+                    $lte: Number(filterQueries?.maxRating),
+                    $gte: Number(filterQueries?.minRating),
+                },
+            })
+        }
+        if (filterQueries?.maxCapacity && filterQueries?.minCapacity) {
+            this.modelQuery = this.modelQuery.find({
+                capacity: {
+                    $lte: Number(filterQueries?.maxCapacity),
+                    $gte: Number(filterQueries?.minCapacity),
+                },
+            })
+        }
         exlcudeFields.forEach((fields) => delete filterQueries[fields])
         this.modelQuery = this.modelQuery.find(filterQueries as FilterQuery<T>)
 
@@ -49,7 +78,7 @@ class QueryBuilder<T> {
         const limit: number = Number(this.reqQuery?.limit) || 5
         const page: number = Number(this.reqQuery?.page) || 1
         const skip = page && limit ? (page - 1) * limit : 0
-        if(limit&&page){
+        if (limit && page) {
             this.modelQuery = this.modelQuery.skip(skip).limit(limit)
         }
         return this
@@ -60,17 +89,19 @@ class QueryBuilder<T> {
         this.modelQuery = this.modelQuery.select(fields)
         return this
     }
-    async countDocuments(){
+    async countDocuments() {
         const filterQuery = this.modelQuery.getFilter()
-        const totalDocuments = await this.modelQuery.model.countDocuments(filterQuery)
+        const totalDocuments = await this.modelQuery.model.countDocuments(
+            filterQuery
+        )
         const page: number = Number(this.reqQuery?.page) || 1
         const limit: number = Number(this.reqQuery?.limit) || 5
         const totalPages = Math.ceil(totalDocuments / limit) || 0
-        return{
+        return {
             totalDocuments,
             limit,
             page,
-            totalPages
+            totalPages,
         }
     }
 }
