@@ -46,8 +46,8 @@ class QueryBuilder<T> {
         return this
     }
     paginate() {
-        const limit: number = Number(this.reqQuery?.limit)
-        const page: number = Number(this.reqQuery?.page)
+        const limit: number = Number(this.reqQuery?.limit) || 5
+        const page: number = Number(this.reqQuery?.page) || 1
         const skip = page && limit ? (page - 1) * limit : 0
         if(limit&&page){
             this.modelQuery = this.modelQuery.skip(skip).limit(limit)
@@ -59,6 +59,19 @@ class QueryBuilder<T> {
             (this.reqQuery?.fields as string)?.split(",").join(" ") || "-__v"
         this.modelQuery = this.modelQuery.select(fields)
         return this
+    }
+    async countDocuments(){
+        const filterQuery = this.modelQuery.getFilter()
+        const totalDocuments = await this.modelQuery.model.countDocuments(filterQuery)
+        const page: number = Number(this.reqQuery?.page) || 1
+        const limit: number = Number(this.reqQuery?.limit) || 5
+        const totalPages = Math.ceil(totalDocuments / limit) || 0
+        return{
+            totalDocuments,
+            limit,
+            page,
+            totalPages
+        }
     }
 }
 

@@ -15,15 +15,16 @@ const signup = catchAsync(async (req, res) => {
     )
 })
 const login = catchAsync(async (req, res) => {
-    const { accessToken, payload } = await authServices.loginUser(req.body)
+    const { accessToken } = await authServices.loginUser(req.body)
 
     res.cookie("access-token", accessToken)
     sendResponse(
         {
             success: true,
             statusCode: 200,
-            token: accessToken,
-            data: payload,
+            data: {
+                accessToken,
+            },
             message: "User logged in successfully!",
         },
         res

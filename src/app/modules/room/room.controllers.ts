@@ -57,8 +57,9 @@ const getAllAvailableRooms = catchAsync(async (req, res) => {
         {
             success: true,
             statusCode: 200,
-            data: result,
-            message: result.length
+            data: result.data,
+            meta:result.meta,
+            message: result.data.length
                 ? "All rooms retrieved successfully!"
                 : "No data found",
         },

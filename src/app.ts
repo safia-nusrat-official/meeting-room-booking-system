@@ -4,13 +4,15 @@ import cookieParser from "cookie-parser"
 import router from "./app/routes"
 import { globalErrorHandler } from "./app/middlewares/globalErrorHandler"
 import { notFoundErrorHandler } from "./app/middlewares/notFoundErrorHandler"
+import { Room } from "./app/modules/room/room.model"
 
 const app: Application = express()
 
 app.use(express.json())
 app.use(
     cors({
-        origin: ["http://localhost:5000/"],
+        origin: "http://localhost:5173",
+        credentials: true,
     })
 )
 app.use(cookieParser())
@@ -18,7 +20,7 @@ app.use(cookieParser())
 app.use("/api", router)
 
 app.get("/", async (req: Request, res: Response) => {
-    res.send("Server running")
+    res.send("MeetWise Server running")
 })
 
 app.use(globalErrorHandler)
