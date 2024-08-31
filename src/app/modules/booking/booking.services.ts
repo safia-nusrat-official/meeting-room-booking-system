@@ -154,12 +154,16 @@ const getUserBookingsFromDB = async (
 }
 const getASingleBookingFromDB = async (_id: string) => {
     const result = await Booking.findOne({ _id })
+    .populate("user")
+    .populate("room")
+    .populate("slots")
+
     if (!result) {
         throw new AppError(404, `Booking not found.`)
     }
     if (result.isDeleted) {
         throw new AppError(404, `Booking has been deleted.`)
-    }
+    }    
     return result
 }
 const updateBookingStatusIntoDB = async (

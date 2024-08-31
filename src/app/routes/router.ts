@@ -4,12 +4,17 @@ import { roomRoutes } from "../modules/room/room.routes"
 import { slotRoutes } from "../modules/slot/slot.routes"
 import { bookingRoutes } from "../modules/booking/booking.routes"
 import { userRoutes } from "../modules/user/user.routes"
+import { paymentRoutes } from "../modules/payment/payment.routes"
 
 const router = express.Router()
 const applicationRoutes = [
     {
         path: "/auth",
         route: authRoutes,
+    },
+    {
+        path: "/create-payment-intent",
+        route: paymentRoutes,
     },
     {
         path: "/rooms",

@@ -1,7 +1,7 @@
 import express, { Application, Request, Response } from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
-import router from "./app/routes"
+import router from "./app/routes/router"
 import { globalErrorHandler } from "./app/middlewares/globalErrorHandler"
 import { notFoundErrorHandler } from "./app/middlewares/notFoundErrorHandler"
 import { Room } from "./app/modules/room/room.model"
@@ -22,7 +22,6 @@ app.use("/api", router)
 app.get("/", async (req: Request, res: Response) => {
     res.send("MeetWise Server running")
 })
-
 app.use(globalErrorHandler)
 app.use(notFoundErrorHandler)
 
