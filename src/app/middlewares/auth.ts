@@ -1,12 +1,12 @@
 import httpStatus from "http-status"
 import config from "../config"
 import AppError from "../errors/AppError"
-import { User } from "../modules/auth/auth.model"
+import { User } from "../modules/user/user.model"
 import { catchAsync } from "../utils/catchAsync"
 import jwt, { JwtPayload } from "jsonwebtoken"
 import { TUserRoles } from "../modules/auth/auth.interface"
 
-export const auth = (...roles:TUserRoles[] ) => {
+export const auth = (...roles: TUserRoles[]) => {
     return catchAsync(async (req, res, next) => {
         const token = req.headers.authorization
         if (!token) {

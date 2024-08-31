@@ -1,7 +1,8 @@
 import { Schema, model } from "mongoose"
-import { TUser, TUserModel } from "./auth.interface"
+import { TUserModel } from "../auth/auth.interface"
 import bcrypt from "bcrypt"
 import config from "../../config"
+import { TUser } from "./user.interface"
 
 const userSchema = new Schema<TUser, TUserModel>({
     email: {

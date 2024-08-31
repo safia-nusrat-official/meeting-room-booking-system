@@ -19,13 +19,8 @@ router.put(
 )
 
 router.get("/", auth("admin"), bookingControllers.getAllBookings)
+router.get("/:id", auth("admin", "user"), bookingControllers.getASingleBooking)
+router.get("/my-bookings/:email", auth("user"), bookingControllers.getUserBookings)
 router.delete("/:id", auth("admin"), bookingControllers.deleteBooking)
 
 export const bookingRoutes = router
-
-export const routerToFetchBookingsOfUser = express.Router()
-routerToFetchBookingsOfUser.get(
-    "/",
-    auth("user"),
-    bookingControllers.getBookingOfUser
-)

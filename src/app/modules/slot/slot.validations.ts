@@ -16,7 +16,7 @@ export const dateValidation = z.string().refine(
         return dateRegex.test(date)
     },
     {
-        message: `Invalid date format. Expected date format: 'YYYY:MM:DD'`,
+        message: `Invalid date format. Expected date format: 'YYYY-MM-DD'`,
     }
 )
 const createSlotSchemaValidation = z.object({

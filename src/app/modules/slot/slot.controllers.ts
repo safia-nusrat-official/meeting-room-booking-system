@@ -18,7 +18,7 @@ const createSlot = catchAsync(async (req, res) => {
     )
 })
 
-const getSlots = catchAsync(async (req, res) => {
+const getAvailableSlots = catchAsync(async (req, res) => {
     if (req.query?.date) {
         const validateDate = dateValidation
         if (!validateDate.safeParse(req.query?.date).success) {
@@ -28,15 +28,37 @@ const getSlots = catchAsync(async (req, res) => {
             )
         }
     }
-    const result = await slotServices.getAllSlots(req.query)
+    const result = await slotServices.getAvailableSlotsFromDB(req.query)
     sendResponse(
         {
             success: true,
             statusCode: 200,
-            data: result,
-            message: result.length
-                ? "Available slots retrieved successfully!"
-                : "No data found",
+            meta: result.meta,
+            data: result.data,
+            message: "Available slots retrieved successfully!"
+        },
+        res
+    )
+})
+
+const getAllSlots = catchAsync(async (req, res) => {
+    if (req.query?.date) {
+        const validateDate = dateValidation
+        if (!validateDate.safeParse(req.query?.date).success) {
+            throw new AppError(
+                httpStatus.BAD_REQUEST,
+                `Invalid date format in query. Expected format: 'YYYY-MM-DD'`
+            )
+        }
+    }
+    const result = await slotServices.getAllSlotsFromDB(req.query)
+    sendResponse(
+        {
+            success: true,
+            statusCode: 200,
+            meta: result.meta,
+            data: result.data,
+            message: "All slots retrieved successfully!"
         },
         res
     )
@@ -44,5 +66,6 @@ const getSlots = catchAsync(async (req, res) => {
 
 export const slotControllers = {
     createSlot,
-    getSlots,
+    getAvailableSlots,
+    getAllSlots,
 }

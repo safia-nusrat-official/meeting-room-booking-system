@@ -2,10 +2,8 @@ import express from "express"
 import { authRoutes } from "../modules/auth/auth.routes"
 import { roomRoutes } from "../modules/room/room.routes"
 import { slotRoutes } from "../modules/slot/slot.routes"
-import {
-    bookingRoutes,
-    routerToFetchBookingsOfUser,
-} from "../modules/booking/booking.routes"
+import { bookingRoutes } from "../modules/booking/booking.routes"
+import { userRoutes } from "../modules/user/user.routes"
 
 const router = express.Router()
 const applicationRoutes = [
@@ -22,12 +20,12 @@ const applicationRoutes = [
         route: slotRoutes,
     },
     {
-        path: "/bookings",
-        route: bookingRoutes,
+        path: "/users",
+        route: userRoutes,
     },
     {
-        path: "/my-bookings",
-        route: routerToFetchBookingsOfUser,
+        path: "/bookings",
+        route: bookingRoutes,
     },
 ]
 

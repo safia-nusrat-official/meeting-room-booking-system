@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 import AppError from "../../errors/AppError"
-import { User } from "../auth/auth.model"
+import { User } from "../user/user.model"
 import { Room } from "../room/room.model"
 import { Slot } from "../slot/slot.model"
 import { TBooking, TBookingStatus } from "./booking.interface"
@@ -117,7 +117,7 @@ const insertBookingIntoDB = async (
 }
 const getAllBookingsFromDB = async (query: Record<string, unknown>) => {
     const bookingQuery = new QueryBuilder(
-        Booking.find({ isDeleted: false })
+        Booking.find({ isDeleted: query.isDeleted || false })
             .populate("user")
             .populate("room")
             .populate("slots"),
@@ -130,7 +130,7 @@ const getAllBookingsFromDB = async (query: Record<string, unknown>) => {
     const result = await bookingQuery.modelQuery
     return result
 }
-const getBookingOfUserFromDB = async (
+const getUserBookingsFromDB = async (
     email: string,
     query: Record<string, unknown>
 ) => {
@@ -150,6 +150,16 @@ const getBookingOfUserFromDB = async (
         .paginate()
         .fields()
     const result = userBookingsQuery.modelQuery
+    return result
+}
+const getASingleBookingFromDB = async (_id: string) => {
+    const result = await Booking.findOne({ _id })
+    if (!result) {
+        throw new AppError(404, `Booking not found.`)
+    }
+    if (result.isDeleted) {
+        throw new AppError(404, `Booking has been deleted.`)
+    }
     return result
 }
 const updateBookingStatusIntoDB = async (
@@ -231,7 +241,8 @@ const deleteBookingFromDB = async (id: string) => {
 export const bookingServices = {
     insertBookingIntoDB,
     getAllBookingsFromDB,
-    getBookingOfUserFromDB,
+    getUserBookingsFromDB,
     updateBookingStatusIntoDB,
     deleteBookingFromDB,
+    getASingleBookingFromDB,
 }

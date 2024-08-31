@@ -41,8 +41,14 @@ const getAllBookings = catchAsync(async (req, res) => {
     )
 })
 
-const getBookingOfUser = catchAsync(async (req, res) => {
-    const result = await bookingServices.getBookingOfUserFromDB(
+const getUserBookings = catchAsync(async (req, res) => {
+    if (req.params.email !== req.user.email) {
+        throw new AppError(
+            403,
+            "You are trying to access a different user's bookings!"
+        )
+    }
+    const result = await bookingServices.getUserBookingsFromDB(
         req.user.email,
         req.query
     )
@@ -54,6 +60,18 @@ const getBookingOfUser = catchAsync(async (req, res) => {
             message: result.length
                 ? `User bookings retrieved successfully!`
                 : "No data found.",
+        },
+        res
+    )
+})
+const getASingleBooking = catchAsync(async (req, res) => {
+    const result = await bookingServices.getASingleBookingFromDB(req.params.id)
+    sendResponse(
+        {
+            data: result,
+            statusCode: 200,
+            success: true,
+            message: "Booking retrieved successfully!",
         },
         res
     )
@@ -90,5 +108,6 @@ export const bookingControllers = {
     deleteBooking,
     updateBookingStatus,
     getAllBookings,
-    getBookingOfUser,
+    getUserBookings,
+    getASingleBooking,
 }

@@ -12,6 +12,7 @@ router.post(
     validateRequest(slotValidations.createSlotSchemaValidation),
     slotControllers.createSlot
 )
-router.get("/availability", slotControllers.getSlots)
+router.get("/availability", slotControllers.getAvailableSlots)
+router.get("/", slotControllers.getAllSlots)
 
 export const slotRoutes = router

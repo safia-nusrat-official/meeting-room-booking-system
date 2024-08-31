@@ -7,9 +7,11 @@ export interface TBooking {
     user: Types.ObjectId
     totalAmount?: number
     isConfirmed?: "confirmed" | "unconfirmed" | "canceled"
-    isDeleted?: boolean
+    isDeleted?: boolean,
+    paymentMethod?: "paypal"|"stripe"|"amarPay"|"SSLCommersz"
 }
 export type TBookingStatus = "confirmed" | "unconfirmed" | "canceled"
+
 export type TStatusMap = {
     [key in TBookingStatus]: {
         [key in TBookingStatus]?: boolean

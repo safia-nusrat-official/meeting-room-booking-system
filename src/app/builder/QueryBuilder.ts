@@ -1,12 +1,37 @@
 import { FilterQuery, Query } from "mongoose"
+import { TMeta } from "../utils/sendResponse"
 
 class QueryBuilder<T> {
     public modelQuery: Query<T[], T>
     public reqQuery: Record<string, unknown>
+    private page: number
+    private limit: number
+    private skip: number
+    private totalDocuments: number = 0
+    private totalPages: number
+    private sortQuery: string
+    private fieldsQuery: string
+
+    private groupQueryMap = {
+        rooms: "$rooms",
+    }
 
     constructor(modelQuery: Query<T[], T>, reqQuery: Record<string, unknown>) {
         this.modelQuery = modelQuery
         this.reqQuery = reqQuery
+        this.page = Number(this.reqQuery?.page) || 1
+        this.sortQuery =
+            (this.reqQuery?.sort as string)?.split(",").join(" ") || "roomNo"
+        this.fieldsQuery =
+            (this.reqQuery?.fields as string)?.split(",").join(" ") || "-__v"
+        this.limit =
+            Number(
+                this.reqQuery?.limit === "all" ? "0" : this.reqQuery?.limit
+            ) || 5
+
+        this.skip = this.page && this.limit ? (this.page - 1) * this.limit : 0
+        this.totalPages =
+            (this.limit > 0 && Math.ceil(this.totalDocuments / this.limit)) || 1
     }
 
     search(searchableFields: string[]) {
@@ -23,7 +48,6 @@ class QueryBuilder<T> {
         }
         return this
     }
-
     filter() {
         const exlcudeFields: string[] = [
             "searchTerm",
@@ -37,20 +61,11 @@ class QueryBuilder<T> {
             "maxCapacity",
         ]
         const filterQueries = { ...this.reqQuery }
-        console.log(filterQueries)
         if (filterQueries?.priceMin && filterQueries?.priceMax) {
             this.modelQuery = this.modelQuery.find({
                 pricePerSlot: {
                     $lte: Number(filterQueries?.priceMax),
                     $gte: Number(filterQueries?.priceMin),
-                },
-            })
-        }
-        if (filterQueries?.minRating && filterQueries?.maxRating) {
-            this.modelQuery = this.modelQuery.find({
-                rating: {
-                    $lte: Number(filterQueries?.maxRating),
-                    $gte: Number(filterQueries?.minRating),
                 },
             })
         }
@@ -69,39 +84,110 @@ class QueryBuilder<T> {
     }
 
     sort() {
-        const sort: string =
-            (this.reqQuery?.sort as string)?.split(",").join(" ") || "roomNo"
-        this.modelQuery = this.modelQuery.sort(sort)
+        this.modelQuery = this.modelQuery.sort(this.sortQuery)
         return this
     }
+
     paginate() {
-        const limit: number = Number(this.reqQuery?.limit) || 5
-        const page: number = Number(this.reqQuery?.page) || 1
-        const skip = page && limit ? (page - 1) * limit : 0
-        if (limit && page) {
-            this.modelQuery = this.modelQuery.skip(skip).limit(limit)
+        if (this.limit && this.page) {
+            this.modelQuery = this.modelQuery.skip(this.skip).limit(this.limit)
         }
         return this
     }
+
     fields() {
-        const fields =
-            (this.reqQuery?.fields as string)?.split(",").join(" ") || "-__v"
-        this.modelQuery = this.modelQuery.select(fields)
+        this.modelQuery = this.modelQuery.select(this.fieldsQuery)
         return this
     }
+
     async countDocuments() {
         const filterQuery = this.modelQuery.getFilter()
-        const totalDocuments = await this.modelQuery.model.countDocuments(
+        this.totalDocuments = await this.modelQuery.model.countDocuments(
             filterQuery
         )
-        const page: number = Number(this.reqQuery?.page) || 1
-        const limit: number = Number(this.reqQuery?.limit) || 5
-        const totalPages = Math.ceil(totalDocuments / limit) || 0
         return {
-            totalDocuments,
-            limit,
-            page,
-            totalPages,
+            totalDocuments: this.totalDocuments,
+            limit: this.limit,
+            page: this.page,
+            totalPages: this.totalPages,
+        }
+    }
+
+    async groupData() {
+        /**
+         *  @description A method to group slots by same room and same booking date
+         * @deprecated Only works on the `Slot` model
+         */
+        if (
+            this.modelQuery.model.modelName === "slot" &&
+            this.reqQuery?.groupBy &&
+            this.reqQuery?.groupBy === "rooms"
+        ) {
+            const result = await this.modelQuery.model
+                .aggregate([
+                    {
+                        $group: {
+                            _id: { room: "$room", date: "$date" },
+                            slots: { $push: "$$ROOT" },
+                        },
+                    },
+                    {
+                        $lookup: {
+                            from: "rooms",
+                            foreignField: "_id",
+                            localField: "_id.room",
+                            as: "room",
+                        },
+                    },
+                    {
+                        $project: {
+                            date: "$_id.date",
+                            slots: 1,
+                            room: { $arrayElemAt: ["$room", 0] },
+                            _id: 0,
+                        },
+                    },
+                    {
+                        $facet: {
+                            meta: [{ $count: "total" }],
+                            data: [],
+                        },
+                    },
+                    {
+                        $addFields: {
+                            meta: {
+                                $ifNull: [
+                                    { $arrayElemAt: ["$meta.total", 0] },
+                                    0,
+                                ],
+                            },
+                        },
+                    },
+                ])
+                .sort(this.sortQuery)
+                .skip(this.skip)
+                .limit(this.limit)
+
+            this.totalDocuments = Number(result[0]?.meta) || 0
+
+            const meta: TMeta = {
+                totalDocuments: this.totalDocuments,
+                totalPages: this.totalPages,
+                limit: this.limit,
+                page: this.page,
+            }
+            const data: any[] = result[0]?.data || []
+
+            return { meta, data }
+        } else {
+            const meta: TMeta = {
+                totalDocuments: this.totalDocuments,
+                totalPages: this.totalPages,
+                limit: this.limit,
+                page: this.page,
+            }
+
+            return { meta, data: [] }
         }
     }
 }

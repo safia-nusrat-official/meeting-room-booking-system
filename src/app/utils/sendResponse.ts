@@ -1,6 +1,6 @@
 import { Response } from "express"
 
-type TMeta = {
+export type TMeta = {
     page: number
     limit: number
     totalDocuments: number
@@ -22,8 +22,8 @@ export function sendResponse<TDataType>(
         success: data.success,
         statusCode: data.statusCode,
         message: data.message,
-        data: data.data,
         meta: data.meta,
+        data: data.data,
     }
     if (data?.token) {
         response.token = data.token

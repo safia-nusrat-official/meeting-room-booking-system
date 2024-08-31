@@ -1,11 +1,9 @@
-import httpStatus from "http-status"
-import QueryBuilder from "../../builder/QueryBuilder"
 import config from "../../config"
 import AppError from "../../errors/AppError"
-import { userSearchableFields } from "./auth.constants"
-import { TUser, TLoginData } from "./auth.interface"
-import { User } from "./auth.model"
+import { TLoginData } from "./auth.interface"
+import { User } from "../user/user.model"
 import jwt from "jsonwebtoken"
+import { TUser } from "../user/user.interface"
 
 const insertUserIntoDB = async (payload: TUser) => {
     const user = await User.doesUserExist(payload.email)
@@ -32,6 +30,7 @@ const loginUser = async (payload: TLoginData) => {
         address: user.address,
         phone: user.phone,
         role: user.role,
+        _id: user._id,
     }
 
     const accessToken = jwt.sign(data, config.access_secret as string, {
@@ -42,19 +41,7 @@ const loginUser = async (payload: TLoginData) => {
         accessToken,
     }
 }
-const getAllUsersFromDB = async (query: Record<string, unknown>) => {
-    const userQuery = new QueryBuilder(User.find(), query)
-        .search(userSearchableFields)
-        .filter()
-        .sort()
-        .paginate()
-        .fields()
-
-    const result = await userQuery.modelQuery
-    return result
-}
 export const authServices = {
     insertUserIntoDB,
     loginUser,
-    getAllUsersFromDB,
 }

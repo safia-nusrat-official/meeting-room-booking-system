@@ -18,7 +18,7 @@ const insertSlotIntoDB = async (payload: TSlot) => {
      * step-3: divide slot duration by slot interval and generate slots for each interval
      * step-4: Ensure no duplicate slot are created for the same room on same date with same start and end time.
      *
-     * @param {TSlot} payload - Slot details containing
+     * @param {TSlot} payload - containing Slot details
      * @returns {Promise<Array<TSlot>>} - The array of slots created for the room
      * @throws {AppError} - Throws an error if a room is not found, deleted or a creation fails
      */
@@ -98,7 +98,24 @@ const insertSlotIntoDB = async (payload: TSlot) => {
     const result = await Slot.find({ room, date }).populate("room")
     return result
 }
-const getAllSlots = async (query: Record<string, unknown>) => {
+const getAllSlotsFromDB = async (query: Record<string, unknown>) => {
+    if (query.groupBy === "rooms") {
+        const result = await new QueryBuilder(Slot.find({}), query).groupData()
+        if(result){
+            console.log(result)
+            return result
+        }
+    }
+    const slotQuery = new QueryBuilder(Slot.find({}).populate("room"), query)
+        .filter()
+        .sort()
+        .paginate()
+        .fields()
+    const result = await slotQuery.modelQuery
+    const meta = await slotQuery.countDocuments()
+    return { meta, data: result }
+}
+const getAvailableSlotsFromDB = async (query: Record<string, unknown>) => {
     const slotQuery = new QueryBuilder(
         Slot.find({ isBooked: false }).populate("room"),
         query
@@ -108,10 +125,12 @@ const getAllSlots = async (query: Record<string, unknown>) => {
         .paginate()
         .fields()
     const result = await slotQuery.modelQuery
-    return result
+    const meta = await slotQuery.countDocuments()
+    return { meta, data: result }
 }
 
 export const slotServices = {
     insertSlotIntoDB,
-    getAllSlots,
+    getAllSlotsFromDB,
+    getAvailableSlotsFromDB,
 }
