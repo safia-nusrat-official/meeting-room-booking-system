@@ -23,6 +23,8 @@ const slotSchema = new Schema<TSlot, TSlotModel>({
         type: Boolean,
         default: false,
     },
+}, {
+    timestamps:true
 })
 
 slotSchema.statics.doesSlotExist = async function (id: string) {

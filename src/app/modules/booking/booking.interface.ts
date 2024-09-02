@@ -8,7 +8,7 @@ export interface TBooking {
     totalAmount?: number
     isConfirmed?: "confirmed" | "unconfirmed" | "canceled"
     isDeleted?: boolean,
-    paymentMethod?: "paypal"|"stripe"|"amarPay"|"SSLCommersz"
+    paymentMethod?: "paypal"|"stripe"
 }
 export type TBookingStatus = "confirmed" | "unconfirmed" | "canceled"
 

@@ -11,9 +11,9 @@ router.post(
     validateRequest(bookingValidations.createBookingSchemaValidation),
     bookingControllers.createBooking
 )
-router.put(
+router.patch(
     "/:id",
-    auth("admin"),
+    auth("admin", "user"),
     validateRequest(bookingValidations.updateBookingSchemaValidation),
     bookingControllers.updateBookingStatus
 )

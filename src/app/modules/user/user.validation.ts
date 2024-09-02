@@ -31,21 +31,15 @@ const nameValidation = z.string({
     })
     .min(2, { message: "Donot provide an empty string as a name." })
 
-const signUpValidation = z.object({
+const updateValidation = z.object({
     body: z.object({
-        name: nameValidation,
-        email: emailValidation,
-        password: passwordValidation,
-        phone: z.string().min(2, { message: "Donot provide an empty string as a phone." }),
-        role: z.enum(["admin", "user"]),
-        address: z.string(),
+        name: nameValidation.optional(),
+        email: emailValidation.optional(),
+        password: passwordValidation.optional(),
+        phone: z.string().min(2, { message: "Donot provide an empty string as a phone." }).optional(),
+        role: z.enum(["admin", "user"]).optional(),
+        address: z.string().optional(),
     })
 })
-const loginValidation = z.object({
-    body: z.object({
-        email: z.string(),
-        password: z.string(),
-    }),
-})
 
-export const authValidations = { signUpValidation, loginValidation }
+export const userValidations = { updateValidation }

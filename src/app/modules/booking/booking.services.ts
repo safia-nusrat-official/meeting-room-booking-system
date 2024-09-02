@@ -9,6 +9,7 @@ import httpStatus from "http-status"
 import { JwtPayload } from "jsonwebtoken"
 import QueryBuilder from "../../builder/QueryBuilder"
 import { mapOfCannotUpdateStatusFromAndTo } from "./booking.constants"
+import { TUser } from "../user/user.interface"
 
 const insertBookingIntoDB = async (
     payload: TBooking,
@@ -127,8 +128,10 @@ const getAllBookingsFromDB = async (query: Record<string, unknown>) => {
         .sort()
         .paginate()
         .fields()
+
     const result = await bookingQuery.modelQuery
-    return result
+    const meta = await bookingQuery.countDocuments()
+    return { data: result, meta }
 }
 const getUserBookingsFromDB = async (
     email: string,
@@ -138,7 +141,7 @@ const getUserBookingsFromDB = async (
     if (!user) {
         throw new AppError(404, `User not found.`)
     }
-    const userBookingsQuery = new QueryBuilder(
+    const bookingQuery = new QueryBuilder(
         Booking.find({ user: user._id })
             .populate("user")
             .populate("room")
@@ -149,30 +152,57 @@ const getUserBookingsFromDB = async (
         .sort()
         .paginate()
         .fields()
-    const result = userBookingsQuery.modelQuery
-    return result
+
+    const result = await bookingQuery.modelQuery
+    const meta = await bookingQuery.countDocuments()
+    return { data: result, meta }
 }
 const getASingleBookingFromDB = async (_id: string) => {
     const result = await Booking.findOne({ _id })
-    .populate("user")
-    .populate("room")
-    .populate("slots")
+        .populate("user")
+        .populate("room")
+        .populate("slots")
 
     if (!result) {
         throw new AppError(404, `Booking not found.`)
     }
     if (result.isDeleted) {
         throw new AppError(404, `Booking has been deleted.`)
-    }    
+    }
     return result
 }
 const updateBookingStatusIntoDB = async (
     id: string,
-    payload: Pick<TBooking, "isConfirmed">
+    user: JwtPayload,
+    payload: Pick<TBooking, "isConfirmed" | "paymentMethod">
 ) => {
+    console.log(user)
+    // unconfirmed booking => can be confirmed or cancelled
+    // confirmed booking => can't be cancelled
+    // cancelled booking => slots.isBooked => false
+
+    const session = await mongoose.startSession()
     const booking = await Booking.findById(id)
     if (!booking) {
         throw new AppError(404, `Booking not found.`)
+    }
+    if (booking.isConfirmed === "canceled") {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            `Booking has been cancelled.`
+        )
+    }
+    if (booking.isConfirmed === "confirmed") {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            `Booking has been confirmed already.`
+        )
+    }
+    if (booking.isDeleted) {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            `Booking has been deleted already.`
+        )
     }
 
     const currentStatus = booking?.isConfirmed as TBookingStatus
@@ -184,22 +214,71 @@ const updateBookingStatusIntoDB = async (
     ) {
         throw new AppError(
             400,
-            `Can't update booking status from ${currentStatus} to ${newStatus}. You can either confirm or cancel an uncorfirmed booking.`
-        )
-    }
-    if (Object.keys(payload).includes("isDeleted")) {
-        throw new AppError(
-            400,
-            `You can't udate delete status of a booking through this route!`
+            `Can't update booking status from ${currentStatus} to ${newStatus}. You can either confirm or cancel an unconfirmed booking.`
         )
     }
 
-    const result = await Booking.findByIdAndUpdate(
-        id,
-        { isConfirmed: payload.isConfirmed },
-        { new: true }
-    )
-    return result
+    try {
+        session.startTransaction()
+
+        // when a booking is cancelled by user, the isBooked status of the slots that were associated with the booking will become false
+        console.log(`Slots of current booking`, booking.slots)
+        let result: any
+        if (payload.isConfirmed === "canceled") {
+            if (booking?.slots?.length > 0) {
+                for (const slotId of booking.slots) {
+                    console.log(slotId)
+                    await Slot.findByIdAndUpdate(
+                        slotId,
+                        {
+                            $set: {
+                                isBooked: false,
+                            },
+                        },
+                        { new: true, session }
+                    )
+                }
+            }
+
+            result = await Booking.findByIdAndUpdate(
+                id,
+                {
+                    $set: {
+                        isConfirmed: payload.isConfirmed,
+                    },
+                },
+                { new: true, session }
+            )
+        }
+
+        // when a booking is confirmed by user, the isBooked status of the slots that were associated with the booking will become false
+        else if (
+            payload.isConfirmed === "confirmed" &&
+            payload?.paymentMethod
+        ) {
+            result = await Booking.findByIdAndUpdate(
+                id,
+                {
+                    $set: {
+                        isConfirmed: payload.isConfirmed,
+                        paymentMethod: payload.paymentMethod,
+                    },
+                },
+                { new: true, session }
+            )
+        }
+
+        await session.commitTransaction()
+        await session.endSession()
+
+        console.log(result)
+        return result
+    } catch (error: any) {
+        await session.abortTransaction()
+        await session.endSession()
+        console.log(error)
+        throw new error()
+    }
 }
 
 const deleteBookingFromDB = async (id: string) => {
@@ -242,6 +321,8 @@ const deleteBookingFromDB = async (id: string) => {
         throw error
     }
 }
+
+
 export const bookingServices = {
     insertBookingIntoDB,
     getAllBookingsFromDB,

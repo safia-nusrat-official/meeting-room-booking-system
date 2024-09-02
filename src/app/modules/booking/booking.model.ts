@@ -34,6 +34,12 @@ const bookingSchema = new Schema<TBooking>({
         type: Boolean,
         default: false,
     },
+    paymentMethod: {
+        type: String,
+        enum: ["stripe", "paypal"],
+    },
+}, {
+    timestamps:true
 })
 
 export const Booking = model<TBooking>("booking", bookingSchema)

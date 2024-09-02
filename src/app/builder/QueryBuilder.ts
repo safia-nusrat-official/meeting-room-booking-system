@@ -1,4 +1,4 @@
-import { FilterQuery, Query } from "mongoose"
+import mongoose, { FilterQuery, Query } from "mongoose"
 import { TMeta } from "../utils/sendResponse"
 
 class QueryBuilder<T> {
@@ -12,16 +12,12 @@ class QueryBuilder<T> {
     private sortQuery: string
     private fieldsQuery: string
 
-    private groupQueryMap = {
-        rooms: "$rooms",
-    }
-
     constructor(modelQuery: Query<T[], T>, reqQuery: Record<string, unknown>) {
         this.modelQuery = modelQuery
         this.reqQuery = reqQuery
         this.page = Number(this.reqQuery?.page) || 1
         this.sortQuery =
-            (this.reqQuery?.sort as string)?.split(",").join(" ") || "roomNo"
+            (this.reqQuery?.sort as string)?.split(",").join(" ") || "name"
         this.fieldsQuery =
             (this.reqQuery?.fields as string)?.split(",").join(" ") || "-__v"
         this.limit =
@@ -48,6 +44,7 @@ class QueryBuilder<T> {
         }
         return this
     }
+
     filter() {
         const exlcudeFields: string[] = [
             "searchTerm",
@@ -58,6 +55,7 @@ class QueryBuilder<T> {
             "priceMax",
             "priceMin",
             "minCapacity",
+            "groupBy",
             "maxCapacity",
         ]
         const filterQueries = { ...this.reqQuery }
@@ -78,8 +76,8 @@ class QueryBuilder<T> {
             })
         }
         exlcudeFields.forEach((fields) => delete filterQueries[fields])
-        this.modelQuery = this.modelQuery.find(filterQueries as FilterQuery<T>)
 
+        this.modelQuery = this.modelQuery.find(filterQueries as FilterQuery<T>)
         return this
     }
 
@@ -123,51 +121,65 @@ class QueryBuilder<T> {
             this.reqQuery?.groupBy &&
             this.reqQuery?.groupBy === "rooms"
         ) {
-            const result = await this.modelQuery.model
-                .aggregate([
-                    {
-                        $group: {
-                            _id: { room: "$room", date: "$date" },
-                            slots: { $push: "$$ROOT" },
+            const pipeline: any = [
+                {
+                    $group: {
+                        _id: { room: "$room", date: "$date" },
+                        slots: { $push: "$$ROOT" },
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "rooms",
+                        foreignField: "_id",
+                        localField: "_id.room",
+                        as: "room",
+                    },
+                },
+                {
+                    $project: {
+                        date: "$_id.date",
+                        slots: 1,
+                        room: { $arrayElemAt: ["$room", 0] },
+                        _id: 0,
+                    },
+                },
+                {
+                    $facet: {
+                        meta: [{ $count: "total" }],
+                        data: [],
+                    },
+                },
+                {
+                    $addFields: {
+                        meta: {
+                            $ifNull: [{ $arrayElemAt: ["$meta.total", 0] }, 0],
                         },
                     },
-                    {
-                        $lookup: {
-                            from: "rooms",
-                            foreignField: "_id",
-                            localField: "_id.room",
-                            as: "room",
-                        },
+                },
+            ]
+
+            if (this.reqQuery.room !== undefined) {
+                console.log("Hitting room")
+                pipeline.unshift({
+                    $match: {
+                        room: new mongoose.Types.ObjectId(
+                            `${this.reqQuery.room}`
+                        ),
+                        isBooked: this.reqQuery.isBooked === "true",
                     },
-                    {
-                        $project: {
-                            date: "$_id.date",
-                            slots: 1,
-                            room: { $arrayElemAt: ["$room", 0] },
-                            _id: 0,
-                        },
-                    },
-                    {
-                        $facet: {
-                            meta: [{ $count: "total" }],
-                            data: [],
-                        },
-                    },
-                    {
-                        $addFields: {
-                            meta: {
-                                $ifNull: [
-                                    { $arrayElemAt: ["$meta.total", 0] },
-                                    0,
-                                ],
-                            },
-                        },
-                    },
-                ])
+                })
+            }
+
+            console.log(pipeline)
+
+            let result = await this.modelQuery.model
+                .aggregate(pipeline)
                 .sort(this.sortQuery)
                 .skip(this.skip)
                 .limit(this.limit)
 
+            // result = await result.fi
             this.totalDocuments = Number(result[0]?.meta) || 0
 
             const meta: TMeta = {

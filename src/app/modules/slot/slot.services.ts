@@ -101,12 +101,41 @@ const insertSlotIntoDB = async (payload: TSlot) => {
 const getAllSlotsFromDB = async (query: Record<string, unknown>) => {
     if (query.groupBy === "rooms") {
         const result = await new QueryBuilder(Slot.find({}), query).groupData()
-        if(result){
+        if (result) {
             console.log(result)
             return result
         }
     }
-    const slotQuery = new QueryBuilder(Slot.find({}).populate("room"), query)
+
+    if (query?.searchTerm) {
+        console.log("hitted aggregate")
+        const result = await Slot.aggregate([
+            {
+                $lookup: {
+                    from: "rooms",
+                    foreignField: "_id",
+                    localField: "room",
+                    as: "room",
+                },
+            },
+            {
+                $unwind: "$room",
+            },
+            {
+                $match: {
+                    "room.name": { $regex: query.searchTerm, $options:"i" },
+                },
+            },
+        ])
+        return { data: result }
+    }
+
+    const slotQuery = new QueryBuilder(
+        Slot.find({}).populate({
+            path: "room",
+        }),
+        query
+    )
         .filter()
         .sort()
         .paginate()
@@ -116,6 +145,13 @@ const getAllSlotsFromDB = async (query: Record<string, unknown>) => {
     return { meta, data: result }
 }
 const getAvailableSlotsFromDB = async (query: Record<string, unknown>) => {
+    if (query.groupBy === "rooms") {
+        const result = await new QueryBuilder(Slot.find({isBooked: false}), query).groupData()
+        if (result) {
+            console.log(result)
+            return result
+        }
+    }
     const slotQuery = new QueryBuilder(
         Slot.find({ isBooked: false }).populate("room"),
         query

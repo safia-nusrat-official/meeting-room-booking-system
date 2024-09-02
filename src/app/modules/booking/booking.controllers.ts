@@ -30,10 +30,11 @@ const getAllBookings = catchAsync(async (req, res) => {
     const result = await bookingServices.getAllBookingsFromDB(req.query)
     sendResponse(
         {
-            data: result,
+            data: result.data,
+            meta: result.meta,
             statusCode: 200,
             success: true,
-            message: result.length
+            message: result.data.length
                 ? "All bookings retrieved successfully!"
                 : "No data found.",
         },
@@ -54,10 +55,11 @@ const getUserBookings = catchAsync(async (req, res) => {
     )
     sendResponse(
         {
-            data: result,
+            data: result.data,
+            meta: result.meta,
             statusCode: 200,
             success: true,
-            message: result.length
+            message: result.data.length
                 ? `User bookings retrieved successfully!`
                 : "No data found.",
         },
@@ -79,7 +81,8 @@ const getASingleBooking = catchAsync(async (req, res) => {
 const updateBookingStatus = catchAsync(async (req, res) => {
     const result = await bookingServices.updateBookingStatusIntoDB(
         req.params.id,
-        req.body
+        req.user,
+        req.body,
     )
     sendResponse(
         {
@@ -103,6 +106,7 @@ const deleteBooking = catchAsync(async (req, res) => {
         res
     )
 })
+
 export const bookingControllers = {
     createBooking,
     deleteBooking,

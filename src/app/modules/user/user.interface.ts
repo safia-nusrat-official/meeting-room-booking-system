@@ -4,5 +4,7 @@ export interface TUser {
     password: string
     phone: string
     address: string
+    profileImage?: string
+    isDeleted?: boolean
     role: "admin" | "user"
 }

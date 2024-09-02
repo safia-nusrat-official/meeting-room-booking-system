@@ -43,6 +43,8 @@ const roomSchema = new Schema<TRoom, TRoomModel>({
         type: Boolean,
         default: false,
     },
+}, {
+    timestamps:true
 })
 
 roomSchema.statics.doesRoomExist = async function (id: string) {

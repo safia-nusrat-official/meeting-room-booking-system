@@ -4,35 +4,47 @@ import bcrypt from "bcrypt"
 import config from "../../config"
 import { TUser } from "./user.interface"
 
-const userSchema = new Schema<TUser, TUserModel>({
-    email: {
-        type: String,
-        required: true,
-        unique: true,
+const userSchema = new Schema<TUser, TUserModel>(
+    {
+        email: {
+            type: String,
+            required: true,
+            unique: true,
+        },
+        name: {
+            type: String,
+            required: true,
+        },
+        address: {
+            type: String,
+            required: true,
+        },
+        phone: {
+            type: String,
+            required: true,
+        },
+        role: {
+            type: String,
+            enum: ["admin", "user"],
+            required: true,
+        },
+        password: {
+            type: String,
+            required: true,
+            select: 0,
+        },
+        profileImage: {
+            type: String,
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false,
+        },
     },
-    name: {
-        type: String,
-        required: true,
-    },
-    address: {
-        type: String,
-        required: true,
-    },
-    phone: {
-        type: String,
-        required: true,
-    },
-    role: {
-        type: String,
-        enum: ["admin", "user"],
-        required: true,
-    },
-    password: {
-        type: String,
-        required: true,
-        select: 0,
-    },
-})
+    {
+        timestamps: true,
+    }
+)
 
 userSchema.pre("save", async function (next) {
     this.password = await bcrypt.hash(

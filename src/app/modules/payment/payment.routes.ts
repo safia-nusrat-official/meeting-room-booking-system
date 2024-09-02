@@ -2,11 +2,13 @@ import express from "express"
 import Stripe from "stripe"
 import config from "../../config"
 import { sendResponse } from "../../utils/sendResponse"
+import { catchAsync } from "../../utils/catchAsync"
+import { paymentControllers } from "./payment.controllers"
 
 const router = express.Router()
 const stripe = new Stripe(config.stripe_secret_key as string)
 
-router.post("/", async (req, res) => {
+router.post("/create-payment-intent", async (req, res) => {
     try {
         const { totalAmount } = req.body
 
@@ -35,5 +37,9 @@ router.post("/", async (req, res) => {
         )
     }
 })
+
+router.post("/create-paypal-order", paymentControllers.createOrderController)
+
+router.post("/capture-paypal-order", paymentControllers.captureOrderController)
 
 export const paymentRoutes = router

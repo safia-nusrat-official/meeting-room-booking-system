@@ -5,6 +5,7 @@ import { slotRoutes } from "../modules/slot/slot.routes"
 import { bookingRoutes } from "../modules/booking/booking.routes"
 import { userRoutes } from "../modules/user/user.routes"
 import { paymentRoutes } from "../modules/payment/payment.routes"
+import { dashboardRoutes } from "../modules/dashboard.routes"
 
 const router = express.Router()
 const applicationRoutes = [
@@ -13,7 +14,11 @@ const applicationRoutes = [
         route: authRoutes,
     },
     {
-        path: "/create-payment-intent",
+        path: "/dashboard",
+        route: dashboardRoutes,
+    },
+    {
+        path: "/payments",
         route: paymentRoutes,
     },
     {
