@@ -16,7 +16,9 @@ export const handleZodError = (err: ZodError): TGenericErrorResponse => {
     const statusCode = httpStatus.BAD_REQUEST
     return {
         statusCode,
-        errMsg: "zod validation error",
+        errMsg:
+            errorSources.map((error) => error.message).join("  ") ||
+            "zod validation error",
         errorSources,
     }
 }

@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from "fs"
 import httpStatus from "http-status"
 import QueryBuilder from "../../builder/QueryBuilder"
 import config from "../../config"
@@ -8,6 +8,7 @@ import { TUser } from "./user.interface"
 import { User } from "./user.model"
 import { JwtPayload } from "jsonwebtoken"
 import hostImageOnCloud from "../../utils/hostImageOnCloud"
+import { USER_ROLES } from "../auth/auth.constants"
 
 const getAllUsersFromDB = async (query: Record<string, unknown>) => {
     const userQuery = new QueryBuilder(User.find(), query)
@@ -72,7 +73,8 @@ const updateUserInDB = async (
     if (user.isDeleted) {
         throw new AppError(404, "User Has Been Deleted!")
     }
-    const result = await User.findByIdAndUpdate(id, payload, { new: true })
+    const { isDeleted, role, email, ...updateData } = payload
+    const result = await User.findByIdAndUpdate(id, updateData, { new: true })
     if (file) {
         fs.unlink(imagePath, (err) => {
             if (err) {
@@ -85,7 +87,27 @@ const updateUserInDB = async (
     return result
 }
 
+const changeRoleOfUser = async (
+    id: string,
+    payload: { role: typeof USER_ROLES }
+) => {
+    const user = await User.findById(id)
+    if (!user) {
+        throw new AppError(404, "User Not Found!")
+    }
+    if (user.isDeleted) {
+        throw new AppError(404, "User Has Been Deleted!")
+    }
+    const result = await User.findByIdAndUpdate(
+        id,
+        { role: payload.role },
+        { new: true }
+    )
+    return result
+}
+
 export const userServices = {
+    changeRoleOfUser,
     getAllUsersFromDB,
     getSingleUserFromDB,
     deleteUserFromDB,

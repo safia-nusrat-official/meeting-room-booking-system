@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from "fs"
 import config from "../../config"
 import AppError from "../../errors/AppError"
 import { TLoginData } from "./auth.interface"
@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken"
 import { TUser } from "../user/user.interface"
 import hostImageOnCloud from "../../utils/hostImageOnCloud"
 
-const insertUserIntoDB = async (payload: TUser, file:any) => {
+const insertUserIntoDB = async (payload: TUser, file: any) => {
     console.log("file inside services", file)
     let imagePath = ""
     if (file) {
@@ -15,32 +15,38 @@ const insertUserIntoDB = async (payload: TUser, file:any) => {
         const imageName = `profile-pic-${payload.name}`
         const profileImg = await hostImageOnCloud(imagePath, imageName)
         payload.profileImage = profileImg.secure_url
-    }else{
+    } else {
         console.log("No images")
         payload.profileImage = ""
     }
-    
+
     const user = await User.doesUserExist(payload.email)
     if (user) {
         throw new Error("User already exists.")
     }
-
     const result = await User.create(payload)
     if (file) {
         fs.unlink(imagePath, (err) => {
             if (err) {
-                console.error(err);
+                console.error(err)
             } else {
-                console.log('Image is deleted.');
+                console.log("Image is deleted.")
             }
-        });
+        })
     }
     return result
 }
 const loginUser = async (payload: TLoginData) => {
     console.log(payload)
-    const user = await User.doesUserExist(payload.email)
+    const user = await User.findOne({email:payload.email}).select(
+        "password role phone address email name isDeleted"
+    )
+    console.log(user)
     if (!user) {
+        throw new AppError(404, "User doesnot exist.")
+    }
+    console.log(user)
+    if (user.isDeleted) {
         throw new AppError(404, "User doesnot exist.")
     }
     if (!(await User.doesPasswordMatch(payload.password, user.password))) {
@@ -53,7 +59,7 @@ const loginUser = async (payload: TLoginData) => {
         address: user.address,
         phone: user.phone,
         role: user.role,
-        _id: user._id,
+        _id: user._id as string,
     }
 
     const accessToken = jwt.sign(data, config.access_secret as string, {

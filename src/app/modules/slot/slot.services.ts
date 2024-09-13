@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+import moment from "moment"
 import QueryBuilder from "../../builder/QueryBuilder"
 import AppError from "../../errors/AppError"
 import { TSlot } from "./slot.interface"
@@ -6,6 +7,7 @@ import { Slot } from "./slot.model"
 import { Room } from "../room/room.model"
 import { generateSlotTimes } from "./slot.utility"
 import httpStatus from "http-status"
+import { TMeta } from "../../utils/sendResponse"
 
 const insertSlotIntoDB = async (payload: TSlot) => {
     /**
@@ -108,7 +110,6 @@ const getAllSlotsFromDB = async (query: Record<string, unknown>) => {
     }
 
     if (query?.searchTerm) {
-        console.log("hitted aggregate")
         const result = await Slot.aggregate([
             {
                 $lookup: {
@@ -123,11 +124,30 @@ const getAllSlotsFromDB = async (query: Record<string, unknown>) => {
             },
             {
                 $match: {
-                    "room.name": { $regex: query.searchTerm, $options:"i" },
+                    "room.name": { $regex: query.searchTerm, $options: "i" },
+                },
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalDocuments: { $sum: 1 },
+                    data: {
+                        $push: "$$ROOT",
+                    },
                 },
             },
         ])
-        return { data: result }
+        if (result.length > 0) {
+            const totalDocuments = result[0].totalDocuments
+            const data = result[0].data
+            const meta: TMeta = {
+                totalDocuments,
+                page: Number(query?.page) || 1,
+                limit: Number(query?.limit) || 5,
+                totalPages: Math.ceil(totalDocuments / Number(query?.limit)),
+            }
+            return { meta, data }
+        }
     }
 
     const slotQuery = new QueryBuilder(
@@ -146,9 +166,11 @@ const getAllSlotsFromDB = async (query: Record<string, unknown>) => {
 }
 const getAvailableSlotsFromDB = async (query: Record<string, unknown>) => {
     if (query.groupBy === "rooms") {
-        const result = await new QueryBuilder(Slot.find({isBooked: false}), query).groupData()
+        const result = await new QueryBuilder(
+            Slot.find({ isBooked: false }),
+            query
+        ).groupData()
         if (result) {
-            console.log(result)
             return result
         }
     }
@@ -164,9 +186,85 @@ const getAvailableSlotsFromDB = async (query: Record<string, unknown>) => {
     const meta = await slotQuery.countDocuments()
     return { meta, data: result }
 }
+const getSingleSlotFromDB = async (id: string) => {
+    const result = await Slot.findById(id)
+    if (!result) {
+        throw new AppError(404, "Slot not found!")
+    }
+    return result
+}
+
+const deleteSlotFromDB = async (id: string) => {
+    const slot = await Slot.findById(id)
+    if (!slot) {
+        throw new AppError(404, "Slot Not Found!")
+    }
+    if (slot.isBooked) {
+        throw new AppError(400, "Slot is Booked!")
+    }
+    const result = await Slot.findByIdAndUpdate(
+        id,
+        { isDeleted: true },
+        { new: true }
+    )
+    return result
+}
+const updateSlotInDB = async (id: string, payload: Partial<TSlot>) => {
+    const slot = await Slot.findById(id)
+    if (!slot) {
+        throw new AppError(404, "Slot Not Found!")
+    }
+    if (slot.isBooked) {
+        throw new AppError(400, "Slot is Booked!")
+    }
+    // change the field to new payload values, and if not provided keep the old ones.
+    const date = payload.date || slot.date
+    const startTime = payload.startTime || slot.startTime
+    const endTime = payload.endTime || slot.endTime
+    const room = payload.room || slot.room
+
+    const newRoom = await Room.findOne({ _id: room })
+    if (newRoom) {
+        // if there is already any slot available in room 'x' on date 'y' from 'a' time to time 'b' ? if no => update slot details
+        const newRoomAvailableOnThatDate = await Slot.findOne({
+            room,
+            date,
+            startTime,
+            endTime,
+        })
+        if (newRoomAvailableOnThatDate) {
+            throw new AppError(
+                403,
+                `There's already a slot available from ${newRoomAvailableOnThatDate.startTime} to ${newRoomAvailableOnThatDate.endTime} on ${newRoomAvailableOnThatDate.date} in the selected room`
+            )
+        }
+        // before updating check if slot duration is okay or not.
+        const slotTimeDifference = moment(endTime, "HH:mm").diff(
+            moment(startTime, "HH:mm"),
+            "minutes"
+        )
+        if (slotTimeDifference > 60 || slotTimeDifference < 60) {
+            throw new AppError(400, "Default slot duration is 60 minutes!")
+        }
+        const result = await Slot.findByIdAndUpdate(
+            id,
+            {
+                date,
+                startTime,
+                endTime,
+                room,
+            },
+            { new: true }
+        )
+        return result
+    }
+}
 
 export const slotServices = {
     insertSlotIntoDB,
+    updateSlotInDB,
     getAllSlotsFromDB,
     getAvailableSlotsFromDB,
+    deleteSlotFromDB,
+    getSingleSlotFromDB,
 }

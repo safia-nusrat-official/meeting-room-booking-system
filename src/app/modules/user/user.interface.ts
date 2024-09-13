@@ -7,4 +7,5 @@ export interface TUser {
     profileImage?: string
     isDeleted?: boolean
     role: "admin" | "user"
+    _id?:string;
 }

@@ -52,7 +52,7 @@ const getRoomById = catchAsync(async (req, res) => {
     )
 })
 const getAllAvailableRooms = catchAsync(async (req, res) => {
-    const result = await roomServices.getAllRooms(req.query)
+    const result = await roomServices.getAllAvailableRooms(req.query)
     sendResponse(
         {
             success: true,

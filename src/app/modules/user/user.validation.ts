@@ -21,8 +21,9 @@ const passwordValidation = z.string().refine(
             "Password must be atleast 8 characters long and contain numbers including atleast one capital letter, one small letter and any of the symbols: ! @ # $ % ^ & * ?",
     }
 )
-    
-const nameValidation = z.string({
+
+const nameValidation = z
+    .string({
         message: "Please provide a valid name.",
     })
     .trim()
@@ -36,10 +37,17 @@ const updateValidation = z.object({
         name: nameValidation.optional(),
         email: emailValidation.optional(),
         password: passwordValidation.optional(),
-        phone: z.string().min(2, { message: "Donot provide an empty string as a phone." }).optional(),
-        role: z.enum(["admin", "user"]).optional(),
+        phone: z
+            .string()
+            .min(2, { message: "Donot provide an empty string as a phone." })
+            .optional(),
         address: z.string().optional(),
-    })
+    }),
+})
+const changeRoleValidation = z.object({
+    body: z.object({
+        role: z.enum(["admin", "user"]),
+    }),
 })
 
-export const userValidations = { updateValidation }
+export const userValidations = { updateValidation , changeRoleValidation}

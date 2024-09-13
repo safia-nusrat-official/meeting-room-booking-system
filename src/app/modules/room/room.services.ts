@@ -21,7 +21,7 @@ const getSingleRoomById = async (id: string) => {
     }
     return result
 }
-const getAllRooms = async (query: Record<string, unknown>) => {
+const getAllAvailableRooms = async (query: Record<string, unknown>) => {
     const roomQuery = new QueryBuilder(Room.find({ isDeleted: false }), query)
         .search(roomSearchableFields)
         .filter()
@@ -143,7 +143,7 @@ const deleteRoomFromDB = async (id: string) => {
 export const roomServices = {
     insertRoomIntoDB,
     getSingleRoomById,
-    getAllRooms,
+    getAllAvailableRooms,
     updateRoomIntoDB,
     deleteRoomFromDB,
 }

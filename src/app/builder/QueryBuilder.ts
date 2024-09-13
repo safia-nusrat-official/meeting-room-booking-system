@@ -20,10 +20,7 @@ class QueryBuilder<T> {
             (this.reqQuery?.sort as string)?.split(",").join(" ") || "name"
         this.fieldsQuery =
             (this.reqQuery?.fields as string)?.split(",").join(" ") || "-__v"
-        this.limit =
-            Number(
-                this.reqQuery?.limit === "all" ? "0" : this.reqQuery?.limit
-            ) || 5
+        this.limit = Number(this.reqQuery?.limit) || 5
 
         this.skip = this.page && this.limit ? (this.page - 1) * this.limit : 0
         this.totalPages =
@@ -87,7 +84,7 @@ class QueryBuilder<T> {
     }
 
     paginate() {
-        if (this.limit && this.page) {
+        if (this.limit && this.page && this.reqQuery?.limit !== "all") {
             this.modelQuery = this.modelQuery.skip(this.skip).limit(this.limit)
         }
         return this

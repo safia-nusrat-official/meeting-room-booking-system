@@ -6,6 +6,7 @@ export interface TSlot {
     startTime: string
     endTime: string
     isBooked?: boolean
+    isDeleted?: boolean
 }
 
 export interface TSlotModel extends Model<TSlot> {

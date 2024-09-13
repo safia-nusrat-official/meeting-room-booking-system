@@ -2,6 +2,10 @@ import { Schema, model } from "mongoose"
 import { TBooking } from "./booking.interface"
 
 const bookingSchema = new Schema<TBooking>({
+    bookingId:{
+        type:String,
+        required:true
+    },
     date: {
         type: String,
         required: true,
@@ -37,6 +41,9 @@ const bookingSchema = new Schema<TBooking>({
     paymentMethod: {
         type: String,
         enum: ["stripe", "paypal"],
+    },
+    paymentDate: {
+        type: Date,
     },
 }, {
     timestamps:true

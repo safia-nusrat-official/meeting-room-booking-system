@@ -39,7 +39,28 @@ const createSlotSchemaValidation = z.object({
             }
         ),
 })
+const updateSlotSchemaValidation = z.object({
+    body: z
+        .object({
+            room: z.string().optional(),
+            date: dateValidation.optional(),
+            startTime: timeValidation.optional(),
+            endTime: timeValidation.optional(),
+        })
+        .refine(
+            (bodyProps) => {
+                const { startTime, endTime, date } = bodyProps
+                const startDate = new Date(`${date}T${startTime}:00`)
+                const endDate = new Date(`${date}T${endTime}:00`)
+                return startDate < endDate
+            },
+            {
+                message: `Slot start time can't be before slot end time.`,
+            }
+        ),
+})
 
 export const slotValidations = {
     createSlotSchemaValidation,
+    updateSlotSchemaValidation
 }

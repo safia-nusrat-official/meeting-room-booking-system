@@ -10,6 +10,9 @@ import { JwtPayload } from "jsonwebtoken"
 import QueryBuilder from "../../builder/QueryBuilder"
 import { mapOfCannotUpdateStatusFromAndTo } from "./booking.constants"
 import { TUser } from "../user/user.interface"
+import { generateBookingId } from "../../utils/generateBookingId"
+import moment from "moment"
+import { sendEmail } from "../../utils/sendEmail"
 
 const insertBookingIntoDB = async (
     payload: TBooking,
@@ -94,6 +97,7 @@ const insertBookingIntoDB = async (
                 {
                     date,
                     user,
+                    bookingId: generateBookingId(),
                     room,
                     slots: uniqueSlotIds,
                     totalAmount,
@@ -181,6 +185,11 @@ const updateBookingStatusIntoDB = async (
     // confirmed booking => can't be cancelled
     // cancelled booking => slots.isBooked => false
 
+    // can't updated bookings of a deleted user
+    const userExists = await User.findOne({ _id: user._id })
+    if (!userExists || userExists.isDeleted) {
+        throw new AppError(404, `Can't update bookings of a deleted user`)
+    }
     const session = await mongoose.startSession()
     const booking = await Booking.findById(id)
     if (!booking) {
@@ -262,6 +271,7 @@ const updateBookingStatusIntoDB = async (
                     $set: {
                         isConfirmed: payload.isConfirmed,
                         paymentMethod: payload.paymentMethod,
+                        paymentDate: new Date(),
                     },
                 },
                 { new: true, session }
@@ -272,6 +282,14 @@ const updateBookingStatusIntoDB = async (
         await session.endSession()
 
         console.log(result)
+
+        const emailSuccessful = await sendEmail({
+            clientName: userExists.name,
+            clientEmail: userExists.email,
+            bookingId: result._id,
+        })
+        console.log(emailSuccessful)
+
         return result
     } catch (error: any) {
         await session.abortTransaction()
@@ -321,7 +339,6 @@ const deleteBookingFromDB = async (id: string) => {
         throw error
     }
 }
-
 
 export const bookingServices = {
     insertBookingIntoDB,

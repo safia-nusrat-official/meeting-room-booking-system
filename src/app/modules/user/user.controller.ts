@@ -28,7 +28,7 @@ const getSingleUser = catchAsync(async (req, res) => {
     )
 })
 const updateUser = catchAsync(async (req, res) => {
-    const result = await userServices.updateUserInDB(req.params.id, req.body)
+    const result = await userServices.updateUserInDB(req.params.id, req.body, req.file)
     sendResponse(
         {
             success: true,
@@ -51,11 +51,24 @@ const deleteUser = catchAsync(async (req, res) => {
         res
     )
 })
+const changeRoleOfUser = catchAsync(async (req, res) => {
+    const result = await userServices.changeRoleOfUser(req.params.id, req.body)
+    sendResponse(
+        {
+            success: true,
+            statusCode: 200,
+            data: result,
+            message: "User role changed successfully!"
+        },
+        res
+    )
+})
 
     
 export const userControllers = {
     getAllUsers,
     getSingleUser,
+    changeRoleOfUser,
     updateUser,
     deleteUser
 }
