@@ -78,10 +78,10 @@ router.get(
                             $match: {
                                 isConfirmed: "confirmed",
                                 isDeleted: false,
-                                // paymentDate: {
-                                //     $gt: startOfWeek,
-                                //     $lt: endOfWeek,
-                                // },
+                                paymentDate: {
+                                    $gt: startOfWeek,
+                                    $lt: endOfWeek,
+                                },
                             },
                         },
                         {
@@ -107,10 +107,10 @@ router.get(
                             },
                         },
                         {
-                            $limit:5
+                            $sort: { date: -1 },
                         },
                         {
-                            $sort: { date: 1 },
+                            $limit: 5,
                         },
                     ],
                     revenueThisWeek: [
@@ -258,7 +258,7 @@ router.get(
                         },
                         {
                             $limit: 2,
-                        }
+                        },
                     ],
                     recentBookingCancellations: [
                         {
@@ -319,15 +319,33 @@ router.get(
         const flatActivities = recentActivities
             .map((activityGroup) => Object.values(activityGroup).flat())
             .flat()
-            .sort((a:any, b:any)=>b.date-a.date)
+            .sort((a: any, b: any) => b.date - a.date)
+
+        const bookedSlots = await Slot.find({
+            isBooked: true,
+            createdAt: {
+                $gt: startOfWeek,
+                $lt: endOfWeek,
+            },
+        })
+        const recentlyCreatedRooms = await Room.find({
+            createdAt: {
+                $gt: startOfWeek,
+                $lt: endOfWeek,
+            },
+        })
 
         const result = {
             totalRooms,
             totalBookings,
             totalSlots,
             totalUsers,
+            recentlyMadeBookings:recentBookingActivites[0]?.recentBookings?.length || 0,
+            recentlyCreatedRooms: recentlyCreatedRooms.length,
+            newlySignedUps: recentUserAcitvities[0]?.recentSignUps?.length || 0,
+            bookedSlots: bookedSlots.length,
             ...revenueAndOtherDetails[0],
-            recentActivities: flatActivities,
+            recentActivities: flatActivities.slice(0, 5),
         }
         sendResponse(
             {

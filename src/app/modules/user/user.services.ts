@@ -56,13 +56,10 @@ const updateUserInDB = async (
     payload: Partial<TUser>,
     file?: any
 ) => {
-    console.log("file inside services", file)
-    let imagePath = ""
     if (file) {
-        imagePath = file.path
         const imageName = `profile-pic-${payload.name}`
         const profileImg = await hostImageOnCloud(file.buffer, imageName) as any
-        payload.profileImage = profileImg.buffer
+        payload.profileImage = profileImg.secure_url
     } else {
         console.log("No images")
     }
@@ -75,15 +72,6 @@ const updateUserInDB = async (
     }
     const { isDeleted, role, email, ...updateData } = payload
     const result = await User.findByIdAndUpdate(id, updateData, { new: true })
-    if (file) {
-        fs.unlink(imagePath, (err) => {
-            if (err) {
-                console.error(err)
-            } else {
-                console.log("Image is deleted.")
-            }
-        })
-    }
     return result
 }
 

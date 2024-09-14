@@ -157,7 +157,6 @@ class QueryBuilder<T> {
             ]
 
             if (this.reqQuery.room !== undefined) {
-                console.log("Hitting room")
                 pipeline.unshift({
                     $match: {
                         room: new mongoose.Types.ObjectId(
@@ -168,15 +167,12 @@ class QueryBuilder<T> {
                 })
             }
 
-            console.log(pipeline)
-
             let result = await this.modelQuery.model
                 .aggregate(pipeline)
                 .sort(this.sortQuery)
                 .skip(this.skip)
                 .limit(this.limit)
 
-            // result = await result.fi
             this.totalDocuments = Number(result[0]?.meta) || 0
 
             const meta: TMeta = {

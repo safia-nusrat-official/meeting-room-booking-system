@@ -180,7 +180,6 @@ const updateBookingStatusIntoDB = async (
     user: JwtPayload,
     payload: Pick<TBooking, "isConfirmed" | "paymentMethod">
 ) => {
-    console.log(user)
     // unconfirmed booking => can be confirmed or cancelled
     // confirmed booking => can't be cancelled
     // cancelled booking => slots.isBooked => false
@@ -231,12 +230,10 @@ const updateBookingStatusIntoDB = async (
         session.startTransaction()
 
         // when a booking is cancelled by user, the isBooked status of the slots that were associated with the booking will become false
-        console.log(`Slots of current booking`, booking.slots)
         let result: any
         if (payload.isConfirmed === "canceled") {
             if (booking?.slots?.length > 0) {
                 for (const slotId of booking.slots) {
-                    console.log(slotId)
                     await Slot.findByIdAndUpdate(
                         slotId,
                         {
@@ -281,8 +278,6 @@ const updateBookingStatusIntoDB = async (
         await session.commitTransaction()
         await session.endSession()
 
-        console.log(result)
-
         const emailSuccessful = await sendEmail({
             clientName: userExists.name,
             clientEmail: userExists.email,
@@ -292,9 +287,11 @@ const updateBookingStatusIntoDB = async (
 
         return result
     } catch (error: any) {
-        await session.abortTransaction()
-        await session.endSession()
         console.log(error)
+        if (session.inTransaction()) {
+            await session.abortTransaction();
+        }
+        await session.endSession()
         throw new error()
     }
 }

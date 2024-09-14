@@ -10,7 +10,6 @@ cloudinary.config({
 
 export default async function hostImageOnCloud(buffer: any, imgName: string) {
     try {
-        console.log(buffer)
         const uploadResult = await new Promise((resolve, reject) => {
             const stream = cloudinary.uploader.upload_stream(
                 {

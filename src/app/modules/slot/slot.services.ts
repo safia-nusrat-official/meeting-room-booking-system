@@ -104,7 +104,6 @@ const getAllSlotsFromDB = async (query: Record<string, unknown>) => {
     if (query.groupBy === "rooms") {
         const result = await new QueryBuilder(Slot.find({}), query).groupData()
         if (result) {
-            console.log(result)
             return result
         }
     }

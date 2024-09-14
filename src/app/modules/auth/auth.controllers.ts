@@ -2,9 +2,7 @@ import { catchAsync } from "../../utils/catchAsync"
 import { sendResponse } from "../../utils/sendResponse"
 import { authServices } from "./auth.services"
 
-const signup = catchAsync(async (req, res) => {
-    console.log(req.body, req.file)
-    
+const signup = catchAsync(async (req, res) => {    
     const result = await authServices.insertUserIntoDB(req.body, req.file)
     sendResponse(
         {

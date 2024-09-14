@@ -8,17 +8,14 @@ import { TUser } from "../user/user.interface"
 import hostImageOnCloud from "../../utils/hostImageOnCloud"
 
 const insertUserIntoDB = async (payload: TUser, file: any) => {
-    console.log("file inside services", file)
     if (file) {
         const imageName = `profile-pic-${payload.name}`
         const profileImg = (await hostImageOnCloud(
             file.buffer,
             imageName
         )) as any
-        console.log(profileImg)
         payload.profileImage = profileImg.secure_url
     } else {
-        console.log("No images")
         payload.profileImage = ""
     }
     
@@ -30,15 +27,12 @@ const insertUserIntoDB = async (payload: TUser, file: any) => {
     return result
 }
 const loginUser = async (payload: TLoginData) => {
-    console.log(payload)
     const user = await User.findOne({ email: payload.email }).select(
         "password role phone address email name isDeleted"
     )
-    console.log(user)
     if (!user) {
         throw new AppError(404, "User doesnot exist.")
     }
-    console.log(user)
     if (user.isDeleted) {
         throw new AppError(404, "User doesnot exist.")
     }

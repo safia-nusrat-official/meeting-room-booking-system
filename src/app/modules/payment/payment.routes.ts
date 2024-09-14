@@ -13,7 +13,6 @@ router.post("/create-payment-intent", async (req, res) => {
         const { totalAmount } = req.body
 
         const amount = Number(totalAmount) * 100
-        console.log(`TotalPayment`, amount)
 
         const paymentIntent = await stripe.paymentIntents.create({
             amount,

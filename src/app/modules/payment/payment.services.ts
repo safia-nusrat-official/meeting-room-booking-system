@@ -22,7 +22,7 @@ const generateAccessToken = async () => {
         config.paypal_client_id,
         config.paypal_secret,
     ]
-    console.log(clientId, clientSecret, base)
+
     try {
         if (!clientId || !clientSecret) {
             throw new Error("MISSING_API_CREDENTIALS")
@@ -48,10 +48,6 @@ const generateAccessToken = async () => {
 
 const createOrder = async (totalAmount:number) => {
     // use the booking information passed from the front-end to calculate the purchase unit details
-    console.log(
-      "booking information passed from the frontend createOrder() callback:",
-      totalAmount,
-    );
     if(totalAmount<0 || isNaN(totalAmount)){
         throw new AppError(400, "Total Amount cannot be a negative number!")
     }
@@ -89,7 +85,6 @@ const createOrder = async (totalAmount:number) => {
 
 
   const captureOrder = async (orderID:string) => {
-    console.log("What capture order recieved: ", orderID)
 
     const accessToken = await generateAccessToken();
     const url = `${base}/v2/checkout/orders/${orderID}/capture`;

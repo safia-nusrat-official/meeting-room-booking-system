@@ -13,7 +13,7 @@ type TClientData = {
 export const sendEmail = async (clientdata: TClientData) => {
     const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
-        port: 587,
+        port: 465,
         secure: config.node_env === "production",
         auth: {
             user: "sattarabdussattar23@gmail.com",
