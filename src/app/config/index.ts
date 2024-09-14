@@ -18,4 +18,5 @@ export default {
     paypal_client_id: process.env.PAYPAL_CLIENT_ID,
     paypal_secret: process.env.PAYPAL_SECRET,
     paypal_base_url: process.env.PAYPAL_BASE_URL,
+    smtp_credentials: process.env.SMTP_CREDENTIALS,
 }

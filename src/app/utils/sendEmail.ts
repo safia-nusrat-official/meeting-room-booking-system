@@ -17,7 +17,7 @@ export const sendEmail = async (clientdata: TClientData) => {
         secure: config.node_env === "production",
         auth: {
             user: "sattarabdussattar23@gmail.com",
-            pass: "lbwf qtry clgw ogua",
+            pass: config.smtp_credentials,
         },
     })
     const bookingData = (await Booking.findById(clientdata.bookingId)

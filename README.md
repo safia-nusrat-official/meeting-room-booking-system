@@ -68,6 +68,7 @@ NODE_ENV=production
 BCRYPT_SALT_ROUNDS=12
 JWT_ACCESS_SECRET=<your_jwt_secret>
 STRIPE_SECRET_KEY=<your_stripe_secret_key>
+SMTP_CREDENTIALS=<your_smtp_credentials>
 
 PAYPAL_CLIENT_ID=<your_paypal_client_id>
 PAYPAL_SECRET=<your_paypal_secret>
