@@ -9,36 +9,29 @@ import hostImageOnCloud from "../../utils/hostImageOnCloud"
 
 const insertUserIntoDB = async (payload: TUser, file: any) => {
     console.log("file inside services", file)
-    let imagePath = ""
     if (file) {
-        imagePath = file.path
         const imageName = `profile-pic-${payload.name}`
-        const profileImg = await hostImageOnCloud(imagePath, imageName)
+        const profileImg = (await hostImageOnCloud(
+            file.buffer,
+            imageName
+        )) as any
+        console.log(profileImg)
         payload.profileImage = profileImg.secure_url
     } else {
         console.log("No images")
         payload.profileImage = ""
     }
-
+    
     const user = await User.doesUserExist(payload.email)
     if (user) {
         throw new Error("User already exists.")
     }
     const result = await User.create(payload)
-    if (file) {
-        fs.unlink(imagePath, (err) => {
-            if (err) {
-                console.error(err)
-            } else {
-                console.log("Image is deleted.")
-            }
-        })
-    }
     return result
 }
 const loginUser = async (payload: TLoginData) => {
     console.log(payload)
-    const user = await User.findOne({email:payload.email}).select(
+    const user = await User.findOne({ email: payload.email }).select(
         "password role phone address email name isDeleted"
     )
     console.log(user)

@@ -61,8 +61,8 @@ const updateUserInDB = async (
     if (file) {
         imagePath = file.path
         const imageName = `profile-pic-${payload.name}`
-        const profileImg = await hostImageOnCloud(imagePath, imageName)
-        payload.profileImage = profileImg.secure_url
+        const profileImg = await hostImageOnCloud(file.buffer, imageName) as any
+        payload.profileImage = profileImg.buffer
     } else {
         console.log("No images")
     }

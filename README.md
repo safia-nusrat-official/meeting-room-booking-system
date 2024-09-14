@@ -1,8 +1,7 @@
-# Meeting Room Booking System for Co-working spaces 💻
-This project is an Express backend application built with TypeScript and Mongoose for an agency that  offers co-working spaces for meetings
-and discussions. It provides an efficient system for room reservation management along with robust validation and error handling mechanisms 
-to enhance the application's reliability. Users receive informative messages in case of booking conflicts or validation errors, guiding them
-towards successful interactions with the platform.
+
+# MeetWise 💻
+
+MeetWise is a robust meeting room booking system designed to streamline the process of reserving rooms in an organization. With an intuitive user interface, secure authentication, and comprehensive admin capabilities, MeetWise makes managing meeting spaces simple and efficient.
 
 ## Table of Contents 📝
 - [**Necessary Links**](#necessary-links)
@@ -19,8 +18,8 @@ towards successful interactions with the platform.
 
 ## Necessary Links 🔗
 [![Live Server Link](https://img.shields.io/badge/Live_Server_Link-blue)](https://meeting-room-booking-system-phi.vercel.app/)
-[![Requirement Analysis Doc](https://img.shields.io/badge/Requirement_Analysis_Doc-red)](https://docs.google.com/document/d/1PLmrXaAovoR4U_WXOPiLBUyTg3iJFsbxpuH1ITuuGhY/edit?usp=sharing)
-[![ER-Diagram](https://img.shields.io/badge/ER_Diagram-yellow)](https://drive.google.com/file/d/1vPxcZldltHjzheNW9MrNKm4X8sK0Da-d/view?usp=sharing)
+[![Live Preview Link](https://img.shields.io/badge/Live_Preview_Link-blue)](https://meeting-room-booking-system-client.vercel.app/)
+[![Client Repository Link](https://img.shields.io/badge/Client_Repository_Link-yellow)](https://github.com/safia-nusrat-official/Meeting-Room-Booking-System-Client)
 
 ## Features ✨
 - Authentication & Authorization
@@ -29,6 +28,10 @@ towards successful interactions with the platform.
 - Users can create bookings by selecting from the available time slots for their desired meeting times.
 - Users receive real-time feedback on the availability of rooms and slots.
 - Robust validation and error handling mechanisms implemented in case of booking conflicts or validation errors.
+- Paypal & Stripe Payment Gateway integrated to offer secure transactions
+- Users receive confirmation emails with transaction details when a booking is confirmed.
+- Mutli-Image Uploading facility available through imgBB and Cloudinary
+
 
 ## Getting Started 🚀
 ### Prerequisites 📋
@@ -36,6 +39,12 @@ Before you begin, please ensure you have the following dependencies installed:
 ```bash
 Node.js (v20.11.0 or later)
 npm (v20.11.0 or later)
+MongoDB (local or cloud instance)
+Email Service API Key
+ImgBB API Key for multi-image uploads
+Cloudinary API Key and API Secret for user profile image
+Stripe Secret Key for Secure Stripe Payment
+PayPal Client Id and Secret for Successful PayPal Transactions
 ```
 ### Installation 🛠️
 1. Clone the repository:
@@ -54,27 +63,32 @@ cd meeting-room-booking-system
 ### Configuration ⚙️
 1. In the root directory of your project, create a .env file and add the following configuration variables:
 ```env
-PORT=5000
-DB_URL=mongodb+srv://sattarabdussattar23:1RAiQp4Pr585Ryzm@learning-mongoose.3blupmm.mongodb.net/assignment-3?retryWrites=true&w=majority&appName=learning-mongoose
-NODE_ENV=development
+DB_URL=mongodb+srv://<your_mongo_db_user>:<your_mongo_db_password>@learning-mongoose.3blupmm.mongodb.net/assignment-3?retryWrites=true&w=majority&appName=learning-mongoose
+NODE_ENV=production
 BCRYPT_SALT_ROUNDS=12
-JWT_ACCESS_SECRET=b60ba0d876aaab06b0ea11f589dd207c
+JWT_ACCESS_SECRET=<your_jwt_secret>
+STRIPE_SECRET_KEY=<your_stripe_secret_key>
+
+PAYPAL_CLIENT_ID=<your_paypal_client_id>
+PAYPAL_SECRET=<your_paypal_secret>
+PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
+
+CLOUD_NAME=<your_cloudinary_cloud_name>
+CLOUDINARY_API_KEY=<your_cloudinary_api_key>
+CLOUDINARY_API_SECRET=<your_cloudinary_api_secret>
 ```
 
 ## Usage 📖
-1. To run the development server, hit:
 ```bash
-npm run dev
-```
-Or, if you want to run the production server:
-```bash
-npm run build
 npm run start
+# or
+yarn start
 ```
 Your server is running on [http://localhost:5000](http://localhost:5000) .
 
 ## API Endpoints 🌐
 Here is a list of the API Endpoints:
+
 ### Auth Routes
   1. **Register new User:**
      - *Route:* **POST** `/api/auth/signup`
@@ -125,12 +139,9 @@ tZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_a
 ```
   2. **Get a Room:**
      - *Route:* **GET** `/api/rooms/:id`
+
   3. **Get all available Rooms:**
      - *Route:* **GET** `/api/rooms/`
- 
- _**N.B:** Did you know you can perform search, filter, sort operations on the result via query parameters?😋_
- 
- _Try it out! `sort=-pricePerSlot&page=2&limit=2`_
  
   4. **Update Room ( _Admin accessible only_ ):**
        - *Route:* **PUT** `/api/rooms/:id`
@@ -179,6 +190,33 @@ tZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_a
   2. **Get all available slots:**
      - *Route:* **GET** `/api/slots/availability`
      _N.B: You can use query params like `/api/slots/availability?date=2024-06-16` and othehrs to filter slots_
+  
+  3. **Update non-booked slots ( _Admin accessible only_ ):**
+     - *Route:* **PATCH** `/api/slots/:id`
+     - *Request Headers:*
+```bash
+Authorization: 
+Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmF
+tZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+```
+  - *Request Body:*
+```json
+  {
+    "room": "60d9c4e4f3b4b544b8b8d1c5",
+    "date": "2024-06-15",
+    "startTime": "09:00",
+    "endTime": "14:00"
+  }  
+```
+
+4. **Delete slots ( _Admin accessible only_ ):**
+     - *Route:* **DELETE** `/api/slots/:id`
+     - *Request Headers:*
+```bash
+Authorization: 
+Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmF
+tZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+```
 
 ### Booking Routes
   1. **Create a Booking ( _Admin accessible only_ ):**
@@ -208,7 +246,7 @@ Authorization:
 Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmF
 tZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
 ```
-  4. **Update Booking Status ( _Admin accessible only_ ):**
+  4. **Update Booking Status ( _User accessible only_ ):**
        - *Route:* **PUT** `/api/bookings/:id`
        - *Request Headers:*
 ```bash
@@ -219,10 +257,12 @@ tZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_a
   - *Request Body:*
 ```json
   {
-    "isConfirmed": "confirmed"
+    "isConfirmed": "confirmed",
+    "paymentMethod":"paypal",
+    "paymentDate:":
   }
 ```
-_N.B: You can change the booking status from `unconfirmed` to `canceled` or `confirmed`_
+_N.B: Only users can change booking status from `unconfirmed` to `canceled` or `confirmed`_
 
   5. **Delete a Booking ( _Admin accessible only_ ):**
      - *Route:* **DELETE** `/api/bookings/:id`
@@ -233,7 +273,8 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmF
 tZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
 ```
 
-_**N.B:** Keep exploring many other routes 😺_
+_N.B:Admins can only delete `canceled` bookings_
+
 
 ## Project Structure 📂
 This project follows Modular structure to ensure scalability, flexibility and maintainability, allowing easier management of code and better organization. Each module encapsulates a specific feature of the application, such as, room, booking and slot management. The main components of the project structure are:
@@ -273,6 +314,10 @@ meeting-room-booking-system/
 │   |   |   |   ├── auth.controllers.ts
 │   |   |   |   ├── auth.services.ts
 │   |   |   |   ├── auth.routes.ts
+│   |   |   ├── payment/
+│   |   |   |   ├── payment.controllers.ts
+│   |   |   |   ├── payment.services.ts
+│   |   |   |   ├── payment.routes.ts
 │   |   |   ├── booking/
 │   |   |   |   ├── booking.interface.ts
 │   |   |   |   ├── booking.model.ts
@@ -297,6 +342,7 @@ meeting-room-booking-system/
 │   |   |   |   ├── slot.controllers.ts
 │   |   |   |   ├── slot.services.ts
 │   |   |   |   ├── slot.routes.ts
+│   |   |   ├── dashboard.routes.ts
 │   ├── app.ts
 │   ├── server.ts
 ├── eslint.config.json
@@ -315,9 +361,14 @@ meeting-room-booking-system/
 - Object Data Modeling: **[Mongoose](https://mongoosejs.com/)**
 - Database: **[MongoDB](https://www.mongodb.com/)**
 - Validation Library: **[Zod](https://zod.dev/)**
-- Authentication: **[JWT](https://jwt.io/)**
 - Formatters: **[ESLint](https://eslint.org/)**, **[Prettier](https://prettier.io/)**
+- Authentication: **[JWT (JSON WEB TOKEN)](https://jwt.io/)**
+- Payment Gateway: **[Stripe](https://stripe.com/), [PayPal](https://www.paypal.com/bd/home)**
+- Image Storage: **[ImgBB](https://imgbb.com/)** for room images, **[Cloudinary](https://cloudinary.com/)** for user profile images
+- Email Service: **[NodeMailer](https://nodemailer.com/)**
+- Others:**[Multer](https://github.com/expressjs/multer#readme), [moment](https://momentjs.com/)**
   
+
 ## Contact 📞
 For any enquires or issues related installation, please reach out to us at _safia.nusrat.official@gmail.com_. We welcome yor feedback and are here to guide you through your troubles and clean up any confusions. Thank you 😊!
 

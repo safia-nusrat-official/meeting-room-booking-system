@@ -1,5 +1,6 @@
 import { Model } from "mongoose"
 import { USER_ROLES } from "./auth.constants"
+import { TUser } from "../user/user.interface"
 
 export type TLoginData = {
     email: string
